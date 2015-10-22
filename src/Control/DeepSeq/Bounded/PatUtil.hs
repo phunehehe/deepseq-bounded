@@ -306,7 +306,7 @@
   --
   --   TN   flip flip flip flip Sym  TNTW
   --
-  --   TW   flip flip flip flip flip Sym 
+  --   TW   flip flip flip flip flip Sym
 -----------------
   -- Fifteen cases to consider in all. Can they all be logically reconciled?...
 ------------------------

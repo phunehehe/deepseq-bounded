@@ -74,7 +74,7 @@ extra-source-files:
 -- source-repository head
 --   type:     git
 --   location: https://www.fremissant.com/package/deepseq-bounded.git
--- 
+--
 -- source-repository this
 --   type:     git
 --   location: https://www.fremissant.com/package/deepseq-bounded.git
@@ -228,7 +228,7 @@ library {
 -- cpphs installs because it's mentioned as a dependency, and
 -- that does install both the library and the executable.
 ---------
---   build-tools: cpphs  
+--   build-tools: cpphs
 --   -- (This seems /not/ to work, since, when USE_CPPHS is default:false,
 --   -- cpphs is still mentioned in the hackage deps.)
 -- --if flag(USE_CPPHS)
@@ -282,7 +282,7 @@ library {
 
 --ghc-options:         -Wall -fenable-rewrite-rules    -ddump-rules -ddump-simpl-stats -ddump-rule-firings
 --ghc-options:         -Wall -fenable-rewrite-rules
-  ghc-options:         -fenable-rewrite-rules   
+  ghc-options:         -fenable-rewrite-rules
 --ghc-options:         -fenable-rewrite-rules -O2
 
   ghc-options:         -fno-warn-duplicate-exports
@@ -440,7 +440,7 @@ library {
         cpp-options: -DUSE_DIE_PATNODE=0
   else
      cpp-options: -DUSE_DIE_PATNODE=0
-  
+
   if flag(USE_TIMING_PATNODE)
      cpp-options: -DUSE_TIMING_PATNODE=1
   else
@@ -487,7 +487,7 @@ test-suite deepseq-bounded-tests {
 -- cpphs installs because it's mentioned as a dependency, and
 -- that does install both the library and the executable.
 ---------
---   build-tools: cpphs  
+--   build-tools: cpphs
 --   -- (This seems /not/ to work, since, when USE_CPPHS is default:false,
 --   -- cpphs is still mentioned in the hackage deps.)
 -- --if flag(USE_CPPHS)

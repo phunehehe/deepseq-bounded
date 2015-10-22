@@ -109,7 +109,7 @@
      --                  /|/  __@__ /decimalint/
      --                  /|/  __>__ /permutation/
      -- /typename/     /->/  string containing neither __:__ (unless /escaped/) nor __;__
-     -- /escaped/      /->/  __\\\\:__ 
+     -- /escaped/      /->/  __\\\\:__
      -- /decimalint/   /->/  digit string not beginning with zero
      -- /permutation/  /->/  of an initial part of the lowercase alphabet, /e.g./ __cdba__
      -- @
@@ -411,7 +411,7 @@
   -- / convenient hack only!  Explanation becomes necessary since /
   -- / Haddock makes it visible no matter what, I mention this, in case /
   -- / of confusion, because the 'depth' is always __post__fix, not prefix. /
-  -- 
+  --
 {--}
   -- XXX Is there any particular reason these fields should be marked strict?
   -- Should they be explicitly unboxed as well? (Performance has been adequate

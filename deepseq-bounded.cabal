@@ -131,8 +131,8 @@ Flag USE_TIMING_PATNODE
 
 Flag OVERLOADED_STRINGS
   Description: Use the OverloadedStrings syntax extension, so never need to call compilePat explicitly. This gives the feeling of "bringing the DSL right into Haskell", and makes ghci experiments a lot less of a headache! Wish I'd had this in since the first release. I guess really nobody is experimenting with this at all, or surely they'd have clamoured for this!
-  Default: True
---Default: False
+  --Default: True
+  Default: False
   Manual: True
 
 Flag USE_PAR_SEQABLE

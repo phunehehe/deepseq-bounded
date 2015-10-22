@@ -305,8 +305,7 @@ library {
 
       -- mtl for State so can assign unique IDs to Pattern nodes,
       -- but this could be done without the State monad (I read...).
---  , mtl == 2.1.3.1
-    , mtl == 2.1.*
+    , mtl
 
 -- We don't really depend on the cpphs /library/, but installing
 -- the library also installs the cpphs executable, so in case
@@ -317,7 +316,7 @@ library {
 
   if ! flag(HASKELL98_FRAGMENT)
      build-depends:
-         syb < 0.5
+         syb
 
   -- deepseq not used for any legitimate reason, unless USE_WW_DEEPSEQ;
   -- but it's used in some debugging and testing code (although probably
@@ -553,7 +552,7 @@ test-suite deepseq-bounded-tests {
 
   if ! flag(HASKELL98_FRAGMENT)
      build-depends:
-         syb < 0.5
+         syb
 
   -- deepseq not used for any legitimate reason, unless USE_WW_DEEPSEQ;
   -- but it's used in some debugging and testing code (although probably

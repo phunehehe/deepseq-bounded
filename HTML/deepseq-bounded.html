@@ -1,0 +1,907 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Bounded DeepSeq</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="main">
+
+<h2 style="margin-top: 50px;">Bounded Forcing</h2>
+
+<a id="dig07s" class="dig-toggle-show" href='javascript:toggle("dig07");' style="margin-left: 0px;">Show Contents</a>
+<div id="dig07" class="digression" style="margin-left: 0px;">
+<a id="dig07h" style="margin-bottom: -16px;" class="dig-toggle-show" href='javascript:toggle("dig07");'>Hide</a><p style="margin-bottom: -10px;">
+<div style="font-size: 85%;">
+<ul><div style="font-size: 110%;">Contents</div>
+<li> <a href="#intro">Intro</a>
+<li> <a href="#design">Design Overview</a>
+<li> <a href="#formally">Formally</a>
+<li> <a href="#example">Example</a>
+<li> <a href="#parallelism">Parallelism</a>
+<li> <a href="#order">Controlling Evaluation Order</a>
+<li> <a href="#fusion">Fusion</a>
+<li> <a href="#generic-deriving">Generic Deriving</a>
+<a id="intro"></a>
+<li> <a href="#patalg">Pattern Algorithms</a>
+<li> <a href="#otherexamples">Other Examples</a>
+<li> <a href="#afterthoughts">Afterthoughts</a>
+</ul>
+</div>
+</div>
+<p style="margin-top: 20px;">
+The <a href="http://hackage.haskell.org/package/deepseq-bounded"><span class="nowrap">deepseq-bounded</span></a> package provides two means of forcing a Haskell expression to an arbitrary but bounded depth, <tt>deepseqn</tt> and <tt>deepseqp</tt>.
+As compared with plain <tt>seq</tt> (incremental forcing) and the beloved <tt>deepseq</tt> (full forcing), the bounded versions bridge the gap between these extremes.
+<p>
+Artificially forcing evaluation can be useful to relieve space leak, measure and tune performance, influence exception behaviour, make lazy I/O happen in a timely manner, and assure threads don&rsquo;t accidentally pass unevaluated computations to other threads (<span class="nowrap">&ldquo;time leak&rdquo;</span>).
+Bounded forcing (what this package offers) is necessary <span class="nowrap">to work</span> with streams, and other &ldquo;infinite&rdquo; data structures, where plain <tt>rnf</tt>/<tt>deepseq</tt>/<tt>force</tt> will diverge.
+<p>
+<a id="dig03s" class="dig-toggle-show" href='javascript:toggle("dig03");' style="margin-left: 0px;">Show</a>
+<div id="dig03" class="digression" style="margin-left: 0px;">
+<a id="dig03h" style="margin-bottom: -16px;" class="dig-toggle-hide" href='javascript:toggle("dig03");'>Hide</a><p style="margin-bottom: 0px;">
+My particular motivation for <tt><span class="nowrap">deepseq-bounded</span></tt> is to support tool building for space leak characterisation (and provisional alleviation).
+Readers interested in those aspects might like to have a look at <a href="http://hackage.haskell.org/package/seqaid">seqaid</a> and <a href="http://hackage.haskell.org/package/leaky">leaky</a>.
+Space leak is still an Achilles&rsquo; heel of Haskell, they&rsquo;re often fatally severe, and can be as hard to debug as anything you see in other languages.
+With the present tools in use, it&rsquo;s fair to say Haskell space leak is more difficult to diagnose than pointer bugs in C/C++, being perhaps on a par with concurrent programming bugs (probably the most difficult class of bugs in all of contemporary computing).
+People talk about strict-by-default Haskell in the future, but it remains there, and anyway, laziness has its charm and strengths and is attractive to many.
+</div>
+
+<p>
+The bounded forcing functions also have theoretical interest, spanning the <tt>seq</tt> / <tt>deepseq</tt> axis.
+They can be considered in a broader context of, for instance, strictness analysis and evaluation transformers.
+
+<a id="design"></a>
+<h3>Library Design Overview</h3>
+
+Following the tradition of the <a href="http://hackage.haskell.org/package/deepseq">deepseq</a> package, the <tt>NFDataN</tt> module contains a class <tt>NFDataN</tt>, with a method called <tt>rnfn</tt>, instances of which do the work of forcing bounded evaluation.
+Additional functions <tt>deepseqn</tt> and <tt>forcen</tt> are provided, like in <tt>NFData</tt>.
+<tt>NFDataP</tt> also follows this design.
+<p>
+The <tt>NFDataN</tt> module is straightforward; the familiar method and functions of <tt>DeepSeq</tt> have an &lsquo;<tt>n</tt>&rsquo; appended to their names, and take an integer first argument which is the minimum depth, in levels of recursion of constructor applications, to which to force evaluation.
+<pre>
+rnfn      :: NFDataN a =&gt; Int -&gt; a -&gt; ()
+deepseqn  :: NFDataN a =&gt; Int -&gt; a -&gt; b -&gt; b
+forcen    :: NFDataN a =&gt; Int -&gt; a -&gt; a
+</pre>
+<p>
+It is important to note that this is a <em>minimum</em> bound only, since (for example) the runtime system may have speculatively evaluated more of the value already.
+Such behaviour is deliberately unspecified, platform dependent, and outside of our control.
+Also note likewise that, as per <tt>DeepSeq</tt>, no guarantees are made about order of evaluation in the above method and functions.
+<p>
+With <tt>NFDataP</tt>, the extent of evaluation is determined by a value of <tt>Pattern</tt> type.
+One feature of <tt>NFDataP</tt> is the ability to <a href="#order">control order</a> of evaluation.
+<p>
+Usually a user of this library will prefer to compile their patterns from a string in the embedded pattern DSL, but the <tt>Pattern</tt> constructors can be worked with directly.
+Better yet, <tt>-XOverloadedStrings</tt> is now supported, so you can write a String literal <tt><em>str</em></tt> as shorthand for <tt>compilePat <em>str</em></tt>.
+
+<p>
+<a id="dig04s" class="dig-toggle-show" href='javascript:toggle("dig04");' style="margin-left: 0px;">Show</a>
+<div id="dig04" class="digression" style="margin-left: 0px;">
+<a id="dig04h" style="margin-bottom: -16px;" class="dig-toggle-hide" href='javascript:toggle("dig04");'>Hide</a><p style="margin-bottom: 0px;">
+<pre>
+<!--pre style="width: 800px;"-->
+rnfp     :: NFDataP a =&gt; Pattern -&gt; a -&gt; ()
+deepseqp :: NFDataP a =&gt; Pattern -&gt; a -&gt; b -&gt; b
+forcep   :: NFDataP a =&gt; Pattern -&gt; a -&gt; a
+
+data Pattern = Node PatNode [Pattern]
+data PatNode = WR | WS | WW | ...
+
+compilePat :: String -&gt; Pattern
+showPat :: Pattern -&gt; String
+
+-- <b>"foo"</b> in a Pattern context automatically interpreted as <b>compilePat "foo"</b>
+-- (which compilation would fail as <b>"foo"</b> is not a valid pattern string,
+-- but you get the idea)
+instance IsString Pattern where fromString = compilePat
+</pre>
+
+<p>
+Note also that <tt>rnfp</tt>/<tt>forcep</tt>/<tt>deepseqp</tt> influence strictness of their second argument, but the strictness of their first, <tt>Pattern</tt>, argument is totally unspecified.
+It can, of course, be controlled by forcing the <tt>Pattern</tt>.
+Note how this is not the same as composition of forcing functions:
+<pre>
+     (&phi; &pi;<sub>B</sub> . &phi; &pi;<sub>A</sub>) x                 (1)
+  =  &phi; &pi;<sub>B</sub> (&phi; &pi;<sub>A</sub> x)
+</pre>
+versus
+<pre>
+     &phi; (&phi; &pi;<sub>B</sub> &pi;<sub>A</sub>) x                   (2)
+</pre>
+In <tt>(1)</tt> both <tt>Pattern</tt>s <tt>&pi;<sub>A</sub></tt> and <tt>&pi;<sub>B</sub></tt> have unspecified strictness.
+However, in <tt>(2)</tt> <tt>&pi;<sub>B</sub></tt> has unspecified strictness, but <tt>&pi;<sub>A</sub></tt> has strictness determined (entirely) by <tt>&pi;<sub>B</sub></tt>.
+We may say "entirely" since no additional demands placed on these expressions, in the context of execution of the program, can influence the strictness of either <tt>Pattern</tt> argument.
+If we had <tt>&phi; &pi;<sub>B</sub> &pi;<sub>A</sub></tt>, without the outer <tt>&phi;</tt> wrapper of <tt>(2)</tt>, then the execution context might induce additional strictness in <tt>&pi;<sub>A</sub></tt> since now the program itself is demanding a value of type <tt>Pattern</tt>.
+<p>
+This is all a bit subtle, the above might not be totally correct...
+<!--
+However, in <tt>(2)</tt> <tt>&pi;<sub>B</sub></tt> has unspecified strictness, but <tt>&pi;<sub>A</sub></tt> has strictness determined (in part) by <tt>&pi;<sub>B</sub></tt>.
+We must say "in part" because the demands placed on these expressions, in the context of execution of the program, may induce strictness surpassing that encoded by <tt>&pi;<sub>B</sub></tt>.
+-->
+
+</div>
+
+<a id="formally"></a>
+<h3>Formally</h3>
+
+<!--span class="red">Is this correct only relative to an arbitrary but fixed value?</span-->
+
+<p>
+In general, the behaviour can be formalised
+<!-- &sc; &sccue; -->
+<!-- &#8827; &#8829; -->
+<pre>
+        b &gt; a  &rArr;                forcen b  &#8827;  forcen a    <span class="dcmnt">-- (strict) monotonicity</span>
+                  &or;  &forall; c &gt; b .  forcen c  =  forcen b    <span class="dcmnt">-- convergence</span>
+</pre>
+<p>
+and
+<pre>
+  patB &sup; patA  &rArr;                      forcep patB  &#8827;  forcep patA
+                  &or;  &forall; patC &sup; patB .  forcep patC  =  forcep patB
+</pre>
+<p>
+where <tt>f &#8827; g</tt> says &ldquo;<tt>f</tt> causes deeper evaluation than <tt>g</tt>&rdquo;.
+
+<p>
+Only strict monotonicity is interesting, since non-decreasing monotonicity <tt>&#8829;</tt> is axiomatic:
+you cannot unevaluate anything (push thunks back on the heap?...).
+
+<a id="example"></a>
+<h3>Example</h3>
+
+<p>
+Here is one example to illustrate the use of <tt>NFDataP</tt>.
+There is no essential dependence on <tt>rnf</tt> (from <tt>DeepSeq</tt>), but it is available as <tt>*</tt> and it&rsquo;s familiarity helps to concoct an example.
+
+<p>
+So, suppose the following expression occurs in your code, and you have need (for whatever reason) to force the evaluation of <tt>exp_A</tt> and <tt>exp_B</tt>.
+However, the total expression also contains some things you mustn&rsquo;t force, represented here by <tt>undefined</tt> and an infinite list.
+
+<pre>
+  expr = (   undefined :: SomeType
+           , ( exp_A, [2,4..] )
+           , exp_B
+         )
+
+  forcep "(.(*.)*)" expr                   <span class="dcmnt">-- -XOverloadedStrings</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>= forcep ( compilePat "(.(*.)*)" ) expr<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>= forcep (Node WR [Node WI [],Node WR [Node WW [],Node WI []],Node WW []]) expr
+</pre>
+<!--  forcep "(.(*.)*)" expr<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>= forcep ( compilePat "(.(*.)*)" ) expr<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>= forcep (Node WR [Node WI [],Node WR [Node WW [],Node WI []],Node WW []]) expr-->
+
+<p>
+which can be (almost) translated as
+
+<pre>
+= let x1 = exp_A
+      x2 = exp_B
+  in
+        rnf x1
+  `seq` rnf x2
+  `seq` (   undefined :: SomeType
+          , ( x1, [2,4..] )
+          , x2
+        )
+</pre>
+
+<p>
+<a id="dig05s" class="dig-toggle-show" href='javascript:toggle("dig05");' style="margin-left: 0px;">Show</a>
+<div id="dig05" class="digression" style="margin-left: 0px;">
+<a id="dig05h" style="margin-bottom: -16px;" class="dig-toggle-hide" href='javascript:toggle("dig05");'>Hide</a><p style="margin-bottom: 0px;">
+This final translation is actually not quite correct &mdash; <tt>forcep</tt> forces the spine of the paths from <tt>expr</tt> to the substructures we want to hammer with <tt>rnf</tt>, but this translation does not.
+In particular, the pair constructor <tt>(,)</tt> for <tt>( exp_A, [2,4..] )</tt> is forced by <tt>forcep</tt>, but not by this translation.
+[Is this true?...]
+<p>
+Also, it has to be admitted, the API has changed since this was written, and the final line using the raw constructors would (rather less conveniently) read:
+<pre>
+= forcep_ (let a = emptyPatNodeAttrs in
+             Node (WR a) [Node (WI a) []
+                         ,Node (WR a) [Node (WW a) []
+                                      ,Node (WI a) []]
+                         ,Node (WW a) []])
+          expr
+</pre>
+<!--
+<p>
+This has no semantic impact, because it only concerns interior nodes, never leaves, and bottoms are always leaves.
+It may burn a few more cycles to force paths, but it always produces the same value as the translation, given the same inputs.
+[Later: This really sounds like BS to me.]
+-->
+</div>
+
+<p>
+The pattern <tt>(.(*.)*)</tt> will match any ternary constructor, ignoring the first subterm, completely forcing the third, and recursively matching subpattern <tt>(*.)</tt> on the middle subterm!
+
+<p>
+
+It&rsquo;s worth emphasising that pattern-matching requires forcing constructors along the way.
+That is to say, every node in the path from the root to a node being pattern-matched is already forced.
+So the shape of these forcing functions is always a rooted tree, with the root node corresponding to the outermost redex of the expression being forced.
+
+<a id="parallelism"></a>
+<h3>Parallelism</h3>
+
+Varieties of <tt>PatNode</tt> to trigger <tt>Control.Parallel.par</tt> parallel evaluation are of interest.
+This (along with a half dozen other things) is supported by the new <tt>PatNodeAttrs</tt> node attributes.
+In the DSL such nodes are represented by preceding them with an <tt>=</tt> character.
+
+<p>
+So, revisiting our example
+
+<pre>
+  expr = (   undefined :: SomeType
+           , ( exp_A, [2,4..] )
+           , exp_B
+         )
+
+  forcep "(.(=*.)*)" expr                  <span class="dcmnt">-- -XOverloadedStrings</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>= forcep ( compilePat "(.(=*.)*)" ) expr<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>= forcep (Node WR [Node WI [],Node WR [Node PW [],Node WI []],Node WW []]) expr
+</pre>
+
+<p>
+which translates approximately as
+
+<pre>
+= let x1 = exp_A
+      x2 = exp_B
+  in
+        rnf x1
+  `par` rnf x2                       <span class="dcmnt">-- note `par` (not `seq`)</span>
+  `seq` (   undefined :: SomeType
+          , ( x1, [2,4..] )
+          , x2
+        )
+</pre>
+
+<a id="order"></a>
+<p>
+In particular, <tt>rnf x1</tt> will be sparked in parallel with the remainder of the forcing (<tt>rnf x2</tt>).
+
+<h3>Controlling Evaluation Order</h3>
+
+We&rsquo;ve noted that <tt>seq</tt> makes no guarantees about order of evaluation of its arguments.
+This is concisely explained in the <a href="http://hackage.haskell.org/package/parallel-3.2.0.5/docs/Control-Parallel.html">Control.Parallel</a> API document.
+Plain <tt>seq</tt> is strict in its second argument, so the evaluation semantics for <tt>x `seq` y</tt> amount to no guarantees at all about the order in which <tt>x</tt> and <tt>y</tt> are evaluated.
+Evaluation of <tt>x</tt> and <tt>y</tt> is probably interleaved, in general.
+
+<p>
+In the previous section, we saw how to force parallel evaluation in <tt>NFDataP</tt> using <tt>par</tt> from <tt>Control.Parallel</tt>.
+It is also possible to enforce sequencing of computations by leveraging the other primitive of <tt>Control.Parallel</tt>, namely <tt>pseq</tt>:
+
+<pre>
+pseq x y = x `seq` lazy y
+</pre>
+<p>
+where <a href="http://hackage.haskell.org/package/base-4.7.0.1/docs/GHC-Exts.html#v:lazy"><tt>lazy</tt></a> is a GHC primitve that prevents strictness of the second argument.
+
+<p>This lets us write something like
+
+<pre>
+= let x1 = exp_A
+      x2 = exp_B
+  in
+         rnf x1
+  `pseq` rnf x2                       <span class="dcmnt">-- note `pseq` (not `seq`)</span>
+  `seq`  (   undefined :: SomeType    <span class="dcmnt">-- maybe this should also be `pseq`...</span>
+           , ( x1, [2,4..] )
+           , x2
+         )
+</pre>
+
+<a id="dig06s" class="dig-toggle-show" href='javascript:toggle("dig06");' style="margin-left: 0px;">Show</a>
+<div id="dig06" class="digression" style="margin-left: 0px;">
+<a id="dig06h" style="margin-bottom: -16px;" class="dig-toggle-hide" href='javascript:toggle("dig06");'>Hide</a><p style="margin-bottom: 0px;">
+In fact <tt>lazy</tt> is one of just two definitions living in the internal module <tt>GHC.Magic</tt> in the GHC source (the other is <tt>inline</tt>).
+Quoting from the source in <a href="http://hackage.haskell.org/package/base/docs/src/GHC-Conc-Sync.html#pseq">base</a>
+
+<pre>
+-- The reason for the strange "lazy" call is that
+-- it fools the compiler into thinking that pseq  and par are non-strict in
+-- their second argument (even if it inlines pseq at the call site).
+-- If it thinks pseq is strict in "y", then it often evaluates
+-- "y" before "x", which is totally wrong.
+</pre>
+</div>
+
+<p>
+This and more is now supported with the <tt>PatNodeAttrs</tt>.
+Specifically, controlling order of evaluation of sibling forcing patterns is expressed as the prefix modifier <tt>&gt;cdba</tt>.
+(Prefix modifiers may appear in any order.)
+
+<a id="fusion"></a>
+<h3>Fusion</h3>
+
+Little has been done so far to tune performance.
+
+<p>
+Several fusion rules are in effect.
+For <tt>NFDataN</tt> we have
+<pre>
+  {-# RULES
+    "rnfn/composition"
+      forall n1 n2 x.  (.) (rnfn n2) (rnfn n1) x = rnfn (max n1 n2) x
+        #-}
+</pre>
+<p>
+and for <tt>NFDataP</tt> we have
+<pre>
+  {-# RULES
+    "rnfp/composition"
+      forall p1 p2 x.  (.) (rnfp p2) (rnfp p1) x = rnfp ( unionPat [p1, p2] ) x
+        #-}
+</pre>
+
+<p>
+Other rules are probably possible (considering <a href="#patalg">PatUtil</a>), and may have been implemented since the last time this section was updated.
+
+<p>
+Unfortunately I get GHC warnings for all my rules, such as
+<pre>
+   Rule "forcen/composition" may never fire
+     because `.' might inline first
+   Probable fix: add an INLINE[n] or NOINLINE[n] pragma on `.'
+</pre>
+<p>
+and it&rsquo;s not clear to me how to put an <tt>INLINE</tt> pragma
+on base composition.
+<p>
+<a id="dig01s" class="dig-toggle-show" href='javascript:toggle("dig01");' style="margin-left: 0px;">Show</a>
+<div id="dig01" class="digression" style="margin-left: 0px;">
+<a id="dig01h" style="margin-bottom: -16px;" class="dig-toggle-hide" href='javascript:toggle("dig01");'>Hide</a><p style="margin-bottom: 0px;">
+There haven&rsquo;t been many cases of pattern composition coming up so far, except those deliberately written for the tests.
+Also, given the amount of pattern-matching required by unionPat, it&rsquo;s far from certain that this rule will improve performance.
+If the union could be computed once at compile-time (for static patterns only, of course) it would make a lot more sense.
+This could be useful, since <tt>seqaid</tt> is going to output optimised, static patterns for ancillary use in subsequent builds.
+But then seqaid might as well also compute and output the union itself.
+</div>
+
+<p>
+Optimisations will get more attention in the next round of development.
+
+<!-- hide/show
+<h3>Fusion, and Misguided Digression on Order of Evaluation</h3>
+
+<div class="outdated">
+<div class="red">
+LATER YET: Actually, check out Control.Parallel ( par, pseq ) which
+were designed exactly to extend seq to give stronger guarantees
+about order of evaluation.
+</div><div class="red">
+LATER: I think what follows is not right; we cannot control order of evaluation so easily...
+So can relax about this, and add a fusion rule to combine the patterns (using NFDataP.unionPat).
+
+<pre style="background-color: transparent;">
+  {-# RULES
+    "rnfp/composition"  forall p1 p2 x.  (.) (rnfp p2) (rnfp p1) x = rnfp ( unionPat [p1, p2] ) x
+      #-}
+</pre>
+</div>
+<p>
+Another thing which distinguishes NFDataP from NFDataN (and NFData) is that we can now control order of evaluation, in case that matters.
+This we do by composing applications:
+<pre>
+-- Note that patA and patB must intersect on (,), both matching ".",
+-- in order for the subpatterns to get applied.
+( forcep patA . forcep patB ) ( value :: (A, B) )
+</pre>
+<p>
+This will first force B (to the extent matched by patB), and then force A (to extent of patA).
+The net effect does not depend or the order, provided no subexpression is undefined or non-terminating.
+<p>
+Controlling order of evaluation this way is probably a bit fragile, since the compiler may reorder things through optimisation, but &mdash; as composition does not normally commute in general &mdash; the reordering that would hurt us is unlikely to be performed.
+<p>
+It might actually be nice to get GHC to recognise opportunities for re-ordering, since the potential for optimisation is likely more important than controlling evaluation order! Perhaps this is possible with the GHC RULES pragma, but care would have to be taken to assure confluent rewriting (or at least bounding the number of recursive rule applications), which is a problem faced with most uses of GHC RULES.
+</div>
+-->
+
+<a id="generic-deriving"></a>
+<h3>Generic Deriving is Supported</h3>
+
+The <tt>GNFDataN</tt> and <tt>GNFDataP</tt> classes support automatic derivation of instances of <tt>NFDataN</tt> and <tt>NFDataP</tt> for arbitrary types, <span style="white-space: nowrap;">using SOP (<a href="http://hackage.haskell.org/package/generics-sop">generics-sop</a></span></tt>), a relatively new generics library.
+Latterly, <tt>Seqable</tt> supports all types via SOP, and there is no <tt>Seqable</tt> class, only generic functions.
+This is an attractive alternative to wrestling with divers classes and constraints &mdash; one need only worry about one class constraint (Generics.SOP.Generic), instances of which are readily derived.
+
+<!--<tt>GNFDataN</tt> has been implemented in two ways, once using standard <tt>GHC.Generics</tt> (analogously to <a href="http://hackage.haskell.org/package/deepseq-generics">deepseq-generics</a> package), and then again using 
+By default (in the <tt>.cabal</tt> file), SOP is used.
+(However, the only implementation of <tt>GNFDataP</tt> is using SOP.)-->
+
+<!-- Standard generic deriving using <tt>GHC.Generics</tt> is well-documented at <a href="">deepseq-generics</a>, and illustrated in the test suite of this package.
+With it, there is one minor glitch still, but the correspondence of the depth parameter to actual depth in the structure is almost exact.-->
+
+<p>
+Strict monotonicity is assured, until convergence to full evaluation (for finite values).
+With <tt>GNFDataN</tt>, increasing the depth parameter will strictly increase the amount of forced evaluation, in a level-by-level manner within the shape of the value.
+Likewise, with <tt>GNFDataP</tt>, extending the pattern shape within the term shape will strictly increase the forcing.
+<p>
+<!--As for <tt>GNFDataP</tt>, only an SOP generics implementation is provided.
+(It seems unlikely that <tt>GHC.Generics</tt> will suffice, as they explicitly state that nesting shape is unspecified and prone to optimising rewrites.)-->
+
+<p>
+
+To derive instances of <tt>NFDataN</tt> only, you can do:
+
+<pre>
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
+
+import Generics.SOP.TH
+import Control.DeepSeq.Bounded ( NFDataN(..), grnfn )
+
+data TA = A1 TB | A2
+instance NFDataN TA where rnfn = grnfn
+
+data TB = B1 Int TA
+instance NFDataN TB where rnfn = grnfn
+
+deriveGeneric ''TA
+deriveGeneric ''TB
+</pre>
+
+<p>
+<a id="dig02s" class="dig-toggle-show" href='javascript:toggle("dig02");' style="margin-left: 0px;">Show</a>
+<div id="dig02" class="digression" style="margin-left: 0px;">
+<a id="dig02h" style="margin-bottom: -16px;" class="dig-toggle-hide" href='javascript:toggle("dig02");'>Hide</a><p style="margin-bottom: 0px;">
+To derive instances of <tt>NFDataP</tt> for a data type (which requires also instances of superclasses <tt>NFDataN</tt> and of <tt>NFData</tt>), the incantation is:
+
+<pre>
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+
+import Generics.SOP.TH
+import Control.DeepSeq.Bounded ( NFDataN(..), grnfn, NFDataP(..), grnfp )
+import Control.DeepSeq.Generics ( NFData(..), genericRnf )
+import GHC.Generics ( Generic )    <span class="dcmnt">-- for deriving NFData</span>
+import Data.Typeable ( Typeable )  <span class="dcmnt">-- for name-constrained pattern nodes</span>
+
+data TA = A1 TB | A2 deriving ( Show, Generic, Typeable )
+instance NFData  TA where rnf  = genericRnf
+instance NFDataN TA where rnfn = grnfn
+instance NFDataP TA where rnfp = grnfp
+
+data TB = B1 Int TA deriving ( Show, Generic, Typeable )
+instance NFData  TB where rnf  = genericRnf
+instance NFDataN TB where rnfn = grnfn
+instance NFDataP TB where rnfp = grnfp
+
+deriveGeneric ''TA
+deriveGeneric ''TB
+</pre>
+</div>
+
+<p>
+Note that mutually-recursive data types require all their <tt>deriveGeneric</tt> calls to come below their collective definitions.
+<p>
+SOP also offers an alternative approach to automatic instance derivation, piggybacking on <tt>GHC.Generics</tt>, in case Template Haskell is unacceptable in your application.<a id="patalg"></a>
+<p>
+It might be worth noting that the <a href="http://hackage.haskell.org/package/seqaid">seqaid</a> package provides a mechanism for completely automating this process.
+However, it depends on use of a preprocessor, and was deemed inappropriate for this core library.
+
+<h3>Pattern Utilities</h3>
+
+In the course of developing <tt>NFDataP</tt>, several utility functions were written for creating, modifying and combining patterns.
+They&rsquo;ve been collected in the <tt>PatUtil</tt> module.
+
+<pre style="padding-top: 20px;">
+  module Control.DeepSeq.Bounded.PatUtil   -- implicitly imports Pattern also
+
+
+  <b>Basic operations on Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Compute the union of a list of </em>Pattern<em>s.</em></span>
+  <b style="color: #333;">unionPats :: [ Pattern ] -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Compute the intersection of a list of </em>Pattern<em>s.</em></span>
+  <b style="color: #333;">intersectPats :: [ Pattern ] -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Return </em>True<em> if the first pattern matches the second
+  -- (and </em>False<em> otherwise).  Note that matching does not imply
+  -- spanning;  </em>flip subPat<em> would work for that.</em></span>
+  <b style="color: #333;">subPat :: Pattern -&gt; Pattern -&gt; Bool</b>
+
+
+  <b>Operations for obtaining and modifying Patterns based on a term</b>
+
+  <span style="font-size: 95%;"><em>-- Obtain a lazy pattern, matching the shape of
+  -- an arbitrary term (value expression).
+  -- All nodes will be </em>WR<em>.</em></span>
+  <b style="color: #333;">mkPat :: forall d. Data d =&gt; d -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Obtain a lazy pattern, matching the shape of
+  -- an arbitrary term, but only down to at most depth </em>n<em>.
+  -- Satisfies </em>forcep (mkPatN n x) x = forcen n x<em>.</em></span>
+  <b style="color: #333;">mkPatN :: forall d. Data d =&gt; Int -&gt; d -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Grow all leaves by one level within the shape of the provided value.</em></span>
+  <b style="color: #333;">growPat :: forall d. Data d =&gt; Pattern -&gt; d -&gt; Pattern</b>
+
+
+  <b>Operations for obtaining subpatterns (in the 'subPat' sense)</b>
+
+  <span style="font-size: 95%;"><em>-- Given an integer depth and a pattern, truncate the pattern to
+  -- extend to at most this requested depth.</em></span>
+  <b style="color: #333;">truncatePat :: Int -&gt; Pattern -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Elide all leaves which have no non-leaf sibling.
+  -- We want the pattern to still match the same value, only less of it.
+  -- Merely eliding all leaves would, in most cases, cause match failure,
+  -- so we have to be a bit more subtle.</em></span>
+  <b style="color: #333;">shrinkPat :: Pattern -&gt; Pattern</b>
+
+
+  <b>Operations for the direct construction and perturbation of Patterns</b>
+
+  <span style="font-size: 95%;"><em>-- There is no Nil in the Pattern type, but a single </em>WI<em> node as
+  -- empty pattern is a dependable way to ensure that the empty pattern
+  -- never forces anything.</em></span>
+  <b style="color: #333;">emptyPat :: Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- This creates a new </em>WR<em> node, the common root. The argument patterns
+  -- become the children of the root (order is preserved).</em></span>
+  <b style="color: #333;">liftPats :: [ Pattern ] -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Add children to a node (interior or leaf) of the target.
+  -- The first argument is target, the second is a path, and the
+  -- third is a list of subpatterns for insertion, along with the
+  -- indices of the child before which to insert.</em></span>
+  <b style="color: #333;">splicePats :: Pattern -&gt; [Int] -&gt; [ (Int, Pattern) ] -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Elide children of a node (interior or leaf) of the target.
+  -- The first argument is target, the second is a path, and the
+  -- third is a list of child indices for elision.</em></span>
+  <b style="color: #333;">elidePats :: Pattern -&gt; [Int] -&gt; [Int] -&gt; Pattern</b>
+
+  <span style="font-size: 95%;"><em>-- Select a leaf at random, and elide it.  In order to achieve fairness,
+  -- the node probabilities are weighted by nodes in branch.  The path
+  -- arg can "focus" the stochastic erosion to only consider leaves
+  -- beneath a given node.</em></span>
+  <b style="color: #333;">erodePat :: StdGen -&gt; [Int] -&gt; Pattern -&gt; (Pattern, StdGen)</b>
+</pre>
+
+<a id="otherexamples"></a>
+<h3>Other Examples</h3>
+
+More examples can be browsed in the <a href="tests.html">testing output</a>.
+Here we only touch on a few particulars.
+
+<!--
+
+<p>
+The following abbreviation is used frequently in the examples:
+
+<pre>
+__ = undefined
+</pre>
+
+<p>
+Also, suppose the following data types have NFDataP instances (refer to the <a href="#generic-deriving">Generic Deriving</a> section above).
+
+<pre>
+data TA =   A1
+          | A2 (TB Complex,Int)
+          | A3 TA Bool (TB String)
+
+data TB a =   B1
+            | B2 [a]
+            | B3 [TA]
+</pre>
+
+-->
+
+<p>
+First, note that we can handle infinite values, unlike <tt>deepseq</tt>.
+
+<pre>
+  force $ take 5 [1,2..]   <span class="dcmnt">-- [1,2,3,4,5]</span>
+  take 5 $ force [1,2..]   <span class="dcmnt">-- &lt;&lt; nonterminates &gt;&gt;</span>
+
+  forcen 100 $ take 5 [1,2..]   <span class="dcmnt">-- [1,2,3,4,5]</span>
+  take 5 $ forcen 100 [1,2..]   <span class="dcmnt">-- [1,2,3,4,5]</span>
+</pre>
+
+<p>
+Oops, never finished this section...
+And that&rsquo;s a pretty silly example, although it illustrates the distinction.
+Best to refer to the tests for examples, or just play around.
+
+<p>
+Here is the result of iterating <tt>shrinkPat</tt> on a test pattern.
+<!--span style="font-size: 80%;">[Note to self: This should include <tt>P*</tt> and <tt>T*</tt> nodes for illustration, if they actually even work.]</span-->
+
+<pre>
+((.(*(!*3)))(!(*1(!(.!)))))
+((.(*5(.*2)))(.(.(.(..)))))
+((.(*4(.!)))(.(.(..))))
+((.(*3(..)))(.(..)))
+((.(*2.))(..))
+((.(!.)).)
+((.(..)).)
+((..).)
+(..)
+.
+.
+</pre>
+<!--
+((.(*(!*3)))(!(*1(!(.!)))))
+((.(*5(.*2)))(.(.(.(..)))))
+((.(*4(.!)))(.(.(.!))))    
+((.(*3(..)))(.(.(..))))    
+((.(*2!))(.(.!)))          
+((.(!.))(.(..)))           
+((.(..))(.!))              
+((.!)(..))                 
+((..)!)                    
+(!.)                       
+(..)                       
+!                          
+.                          
+.                          
+{{#{*{.*3}}}{.{*1{.{#.}}}}}
+{{#{*5{#*2}}}{#{#{#{##}}}}}
+{{#{*4{#.}}}{#{#{#.}}}}
+{{#{*3{##}}}{#{#{##}}}}
+{{#{*2.}}{#{#.}}}
+{{#{.#}}{#{##}}}
+{{#{##}}{#.}}
+{{#.}{##}}
+{{##}.}
+{.#}
+{##}
+.
+#
+#
+-->
+
+<!-- style="text-align: center; width: 90%; height: 20px; background: #fff;"> -->
+<!--hr style="display: block; width: 80%; height: 1px; border: 0; border-top: 1px solid #ccc; padding: 0; margin-top: 46px; margin-bottom: 0px;" /-->
+<!--hr class="hrule" /-->
+
+<a id="afterthoughts"></a>
+<h3 style="margin-top: 50px;">Afterthoughts</h3>
+
+<p style="margin-top: 20px;">
+<a id="dig08s" class="dig-toggle-show" href='javascript:toggle("dig08");' style="margin-left: 20px;">Show</a>
+<div id="dig08" class="digression" style="margin-left: 20px;">
+<a id="dig08h" style="margin-bottom: -16px;" class="dig-toggle-show" href='javascript:toggle("dig08");'>Hide</a><p style="margin-bottom: -10px;">
+
+<a id="newsyntax"></a>
+<h4 style="margin-bottom: 18px; margin-top: 0px;">Better concrete pattern syntax</h4>
+
+<p style="margin-top: 20px;">
+<div style="color: #F33; font-size: 80%;">
+This change is in 0.6. The text above, and all related online<br />documents, have been revised to use the <em>new</em> grammar.
+</div>
+
+<p>
+It seems possible to simplify the lexical syntax of the pattern DSL.
+<ul>
+<li> If the <tt>PatNode</tt> is <tt>WR</tt>, don&rsquo;t show the dot!
+<li> For <tt>PR</tt>, show <tt>=</tt><em style="font-size: 85%;">subpats</em><tt></tt> instead of <tt>=.</tt><em style="font-size: 85%;">subpats</em><tt></tt>
+<li> For <tt>TR</tt>, show <tt>:</tt><em style="font-size: 85%;">type subpats</em><tt></tt> instead of <tt>.:</tt><em style="font-size: 85%;">type subpats</em><tt></tt>
+</ul>
+
+<p>
+Here is the <tt>shrinkPat</tt> sequence again, new syntax on the left.
+
+<pre>
+ {{#{*{.*3}}}{.{*1{.{#.}}}}}    .{.{#.{*.{.*3}}}.{..{*1.{..{#.}}}}}
+ {{#{*5{#*2}}}{#{#{#{##}}}}}    .{.{#.{*5.{#*2}}}.{#.{#.{#.{##}}}}}
+ {{#{*4{#.}}}{#{#{#.}}}}        .{.{#.{*4.{#.}}}.{#.{#.{#.}}}}
+ {{#{*3{##}}}{#{#{##}}}}        .{.{#.{*3.{##}}}.{#.{#.{##}}}}
+ {{#{*2.}}{#{#.}}}              .{.{#.{*2.}}.{#.{#.}}}
+ {{#{.#}}{#{##}}}               .{.{#.{.#}}.{#.{##}}}
+ {{#{##}}{#.}}                  .{.{#.{##}}.{#.}}
+ {{#.}{##}}                     .{.{#.}.{##}}
+ {{##}.}                        .{.{##}.}
+ {.#}                           .{.#}
+ {##}                           .{##}
+ .                              .
+ #                              #
+ #                              #
+</pre>
+
+<p>
+It&rsquo;ll require quite a few changes, and a major version bump, but I&rsquo;ve filed the <a href="http://fremissant.net/seqaid/trac#20141223-01">ticket</a>.
+This didn&rsquo;t really get much attention, since my main thrust is toweard <a href="http://hackage.haskell.org/package/seqaid">seqaid</a> automation.
+
+<p>
+Later: And now the changes were made, and the concrete syntax is slightly different (refer to the <a href="grammar.html">grammar</a>):
+
+<pre>
+ ((.(*(!*3)))(!(*1(!(.!)))))    !(!(.!(*!(!*3)))!(!!(*1!(!!(.!)))))
+ ((.(*5(.*2)))(.(.(.(..)))))    !(!(.!(*5!(.*2)))!(.!(.!(.!(..)))))
+ ((.(*4(.!)))(.(.(.!))))        !(!(.!(*4!(.!)))!(.!(.!(.!))))
+ ((.(*3(..)))(.(.(..))))        !(!(.!(*3!(..)))!(.!(.!(..))))
+ ((.(*2!))(.(.!)))              !(!(.!(*2!))!(.!(.!)))
+ ((.(!.))(.(..)))               !(!(.!(!.))!(.!(..)))
+ ((.(..))(.!))                  !(!(.!(..))!(.!))
+ ((.!)(..))                     !(!(.!)!(..))
+ ((..)!)                        !(!(..)!)
+ (!.)                           !(!.)
+ (..)                           !(..)
+ !                              !
+ .                              .
+ .                              .
+</pre>
+
+<p>
+It&rsquo;s nice to see this in the reverse sequence, as a &ldquo;growth strategy&rdquo;
+to arrive at the big pattern. As a bonus, I&rsquo;ve added whitespace padding
+to emphasise the structural relationships &mdash; this can&rsquo;t be done
+automatcially yet, although whitespace is accepted by the parser.
+
+<pre>
+ .                          
+ !                          
+ <span class="grey">(</span>.        <span class="grey">   </span>.         <span class="grey">    )</span>
+ <span class="grey">(</span>!        <span class="grey">   </span>.         <span class="grey">    )</span>
+ <span class="grey">(</span>(..      <span class="grey">  )</span>!         <span class="grey">    )</span>
+ <span class="grey">(</span>(.!      <span class="grey">  )</span>(..       <span class="grey">    )</span>
+ <span class="grey">(</span>(.(. .   <span class="grey"> ))</span>(.!       <span class="grey">    )</span>
+ <span class="grey">(</span>(.(! .   <span class="grey"> ))</span>(.(. .    <span class="grey">  )))</span>
+ <span class="grey">(</span>(.(*2!   <span class="grey"> ))</span>(.(. !    <span class="grey">  )))</span>
+ <span class="grey">(</span>(.(*3(.. <span class="grey">)))</span>(.(. (..  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(.(*4(.! <span class="grey">)))</span>(.(. (.!  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(.(*5(.*2<span class="grey">)))</span>(.(. (.(..<span class="grey">)))))</span>
+ <span class="grey">(</span>(.(* (!*3<span class="grey">)))</span>(!(*1(!(.!<span class="grey">)))))</span>
+</pre>
+
+<p>
+Oops! I see my tree shape was more monotonous than intended (although this is the most common texture seen in the wild, namely, right-biased binary trees).
+<p>
+I&rsquo;ve fainted some parentheses, because, while I hesitate to obliterate them, they just take up space.
+<p>
+Now, if only we could just write <tt>"3"</tt> instead of <tt>"*3"</tt>!
+
+<pre>
+ .
+ 1
+ <span class="grey">(</span>.      <span class="grey">   </span>.        <span class="grey">    )</span>
+ <span class="grey">(</span>1      <span class="grey">   </span>.        <span class="grey">    )</span>
+ <span class="grey">(</span>(..    <span class="grey">  )</span>1        <span class="grey">    )</span>
+ <span class="grey">(</span>(.1    <span class="grey">  )</span>(..      <span class="grey">    )</span>
+ <span class="grey">(</span>(.(..  <span class="grey"> ))</span>(.1      <span class="grey">    )</span>
+ <span class="grey">(</span>(.(1.  <span class="grey"> ))</span>(.(..    <span class="grey">  )))</span>
+ <span class="grey">(</span>(.(21  <span class="grey"> ))</span>(.(.1    <span class="grey">  )))</span>
+ <span class="grey">(</span>(.(3(..<span class="grey">)))</span>(.(.(..  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(.(4(.1<span class="grey">)))</span>(.(.(.1  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(.(5(.2<span class="grey">)))</span>(.(.(.(..<span class="grey">)))))</span>
+ <span class="grey">(</span>(.(*(13<span class="grey">)))</span>(1(1(1(.1<span class="grey">)))))</span>
+</pre>
+
+<p>
+But unfortunately note the <tt>"13"</tt> on the last line. (And this example was in no way contrived to exhibit this problem, it arises naturally enough.)
+<p>
+To get around this up to and including depth 19, we can continue to use <tt>"!"</tt> for <tt>"*1"</tt>:
+
+<pre>
+ .
+ !
+ <span class="grey">(</span>.      <span class="grey">   </span>.        <span class="grey">    )</span>
+ <span class="grey">(</span>!      <span class="grey">   </span>.        <span class="grey">    )</span>
+ <span class="grey">(</span>(..    <span class="grey">  )</span>!        <span class="grey">    )</span>
+ <span class="grey">(</span>(.!    <span class="grey">  )</span>(..      <span class="grey">    )</span>
+ <span class="grey">(</span>(.(..  <span class="grey"> ))</span>(.!      <span class="grey">    )</span>
+ <span class="grey">(</span>(.(!.  <span class="grey"> ))</span>(.(..    <span class="grey">  )))</span>
+ <span class="grey">(</span>(.(2!  <span class="grey"> ))</span>(.(.!    <span class="grey">  )))</span>
+ <span class="grey">(</span>(.(3(..<span class="grey">)))</span>(.(.(..  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(.(4(.!<span class="grey">)))</span>(.(.(.!  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(.(5(.2<span class="grey">)))</span>(.(.(.(..<span class="grey">)))))</span>
+ <span class="grey">(</span>(.(*(!3<span class="grey">)))</span>(!(!(!(.!<span class="grey">)))))</span>
+</pre>
+
+<p>
+If I were going to be doing a lot of manual work with patterns, and didn&rsquo;t need <tt>NFDataN</tt> facilities deeper than 19, I would probably go with this.
+<p>
+However, the default must remain <tt>"*23"</tt> as it is unambiguous in the general case.
+<p>
+I&rsquo;ll offer a <tt>.cabal</tt> flag to enable the short version, why not.... This flag must absolutely be <tt>False</tt> by default. It is at the user&rsquo;s risk that they adopt non-default syntax...
+
+<p>
+And this one&rsquo;s even better (because unambiguous), though it can only express <tt>*N</tt> nodes up to a depth of nine:
+
+<pre>
+ .
+ !
+ <span class="grey">(</span>0      <span class="grey">   </span>0        <span class="grey">    )</span>
+ <span class="grey">(</span>1      <span class="grey">   </span>0        <span class="grey">    )</span>
+ <span class="grey">(</span>(00    <span class="grey">  )</span>1        <span class="grey">    )</span>
+ <span class="grey">(</span>(01    <span class="grey">  )</span>(00      <span class="grey">    )</span>
+ <span class="grey">(</span>(0(00  <span class="grey"> ))</span>(01      <span class="grey">    )</span>
+ <span class="grey">(</span>(0(10  <span class="grey"> ))</span>(0(00    <span class="grey">  )))</span>
+ <span class="grey">(</span>(0(21  <span class="grey"> ))</span>(0(01    <span class="grey">  )))</span>
+ <span class="grey">(</span>(0(3(00<span class="grey">)))</span>(0(0(00  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(0(4(01<span class="grey">)))</span>(0(0(01  <span class="grey"> ))))</span>
+ <span class="grey">(</span>(0(5(02<span class="grey">)))</span>(0(0(0(00<span class="grey">)))))</span>
+ <span class="grey">(</span>(0(*(13<span class="grey">)))</span>(1(1(1(01<span class="grey">)))))</span>
+</pre>
+
+<p>
+And I then see a mistake (this is an hour before uploading 0.6.0.0), that <tt>WS</tt> has greater forcing potential than any <tt>WR</tt> so situated!
+So cannot shrink into it. After changing <tt>shrinkPat</tt>:
+
+<pre>
+0                       
+<span class="grey">(</span>0      <span class="grey">   </span>0        <span class="grey">    )</span>
+<span class="grey">(</span>(00    <span class="grey">  )</span>0        <span class="grey">    )</span>
+<span class="grey">(</span>(0(00  <span class="grey"> ))</span>0        <span class="grey">    )</span>
+<span class="grey">(</span>(0(10  <span class="grey"> ))</span>0        <span class="grey">    )</span>
+<span class="grey">(</span>(0(20  <span class="grey"> ))</span>(00      <span class="grey">   ))</span>
+<span class="grey">(</span>(0(3(00<span class="grey">)))</span>(0(00    <span class="grey">  )))</span>
+<span class="grey">(</span>(0(4(01<span class="grey">)))</span>(0(0(00  <span class="grey"> ))))</span>
+<span class="grey">(</span>(0(5(02<span class="grey">)))</span>(0(0(0(00<span class="grey">)))))</span>
+<span class="grey">(</span>(0(*(13<span class="grey">)))</span>(1(1(1(01<span class="grey">)))))</span>
+</pre>
+
+<h4 style="margin-bottom: 20px;">"I can has data family?..."</h4>
+
+I&rsquo;m not normally big on type extensions, and rarely stray beyond the precincts of H98 in my own code, but type families allured me.
+I am hoping to use it to express things about forcing functions in general (<em>e.g.</em> commutativity of composition).
+
+<p>
+The data family certainly packs a whollop, making an extremely concise summary of <tt>deepseq-bounded</tt>.
+I don&rsquo;t know how to use it yet, but it compiles. :)
+Thought I&rsquo;d throw it in, since Haskellers like their type extensions.
+<!--
+The actual evaluation order of <tt>&phi; &kappa;<sub>1</sub> &middot; &phi; &kappa;<sub>2</sub></tt> is probably interleaved, and could easily be in parallel.
+So, if it <em>did</em> matter what order the forcings occurred, we&rsquo;d likely be noticing.
+Still, it&rsquo;s possible to miss the pockets of observable nondeterminacy.
+-->
+
+<pre>
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}  <span class="cmnt">-- b/c Pattern = Node PatNode [Pattern]</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>class FF k where
+   data F k :: * -&gt; *
+<span class="cmnt">-- phi :: (<span style="color: #C44;">Seqable</span> v, NFDataN v, NFDataP v) =&gt; k -&gt; F k v -&gt; v</span>
+   phi :: (<span style="color: #1B3;"><b>Generic</b></span> v, NFDataN v, NFDataP v) =&gt; k -&gt; F k v -&gt; v
+<span class="cmnt">-- phi ::  <span style="color: #1B3;"><b>Generic</b></span> v                        =&gt; k -&gt; F k v -&gt; v</span>  <span style="color: #95C;">-- would be nice...</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>instance FF SeqNode   <span class="cmnt">-- Seqable.force_</span>
+instance FF Int       <span class="cmnt">-- NFDataN.forcen</span>
+instance FF Pattern   <span class="cmnt">-- NFDataP.forcep</span>
+</pre>
+
+The constraints could probably shrink to <em>just</em> <tt class="virgin" style="color: #1B3;"><b>Generic</b></tt> with a bit of work... In fact, trying it now -- to do away with <tt>NFDataN</tt> and <tt>NFDataP</tt> classes, same way implemented <tt>JUST_ALIAS_GSEQABLE</tt> flag for <tt>Seqable</tt>&hellip;
+<div style="display: inline-block; margin-left: 8px; font-size: 60%;">[<span style="color: red;">Fail</span> (even for <tt>NFDataN</tt>) &hellip;&hellip; for now&hellip;]</span></div>
+<div style="height: 10px;"></div>
+<span style="font-size: 80%; margin-left: 6px;">Jan. 2015</span>
+</div>
+
+<p style="margin-top: 40px;">
+<div class="comments" style="margin-top: 10px;" onclick="javascript:document.location.href = 'http://www.reddit.com/r/haskell/comments/2pscxh/ann_deepseqbounded_seqaid_leaky/';">
+<a href="http://www.reddit.com/r/haskell/comments/2pscxh/ann_deepseqbounded_seqaid_leaky/"><b>Discussion</b></a><br /><span style="font-size: 60%;"><a style="display: inline-block; color: black; position: relative; top: -8px; href="http://www.reddit.com/r/haskell/comments/2pscxh/ann_deepseqbounded_seqaid_leaky/">(reddit)&nbsp;</a></span>
+</div>
+
+<div class="footer" style="margin-top: 30px;">
+Andrew Seniuk
+<br>
+July 13 / Dec. 2014
+<br>
+<tt>rasfar@gmail.com</tt>
+</div>
+
+</div>
+
+<script language="javascript">
+function toggle(id1){
+  var ele_s = document.getElementById(id1+"s");
+  var ele_h = document.getElementById(id1+"h");
+  var ele = document.getElementById(id1);
+  if( ele.style.display == "inline-block" ){
+    ele.style.display = "none";
+    ele_s.style.display = "inline-block";
+    ele_h.style.display = "none";
+  }else{
+    ele.style.display = "inline-block";
+    ele_s.style.display = "none";
+    ele_h.style.display = "block";
+  }
+}
+</script>
+
+</body>
+</html>
+

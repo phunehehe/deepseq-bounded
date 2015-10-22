@@ -1,0 +1,37 @@
+
+Subject:
+
+ANN: deepseq-bounded 0.5 -> 0.6
+
+Body:
+
+This may affect depending code. Please consult the distro changelog
+for specific information about how your code might be affected, or
+better yet, refer to
+
+  http://www.fremissant.net/deepseq-bounded/transition-5-6-7.html
+
+and
+
+  http://www.fremissant.net/deepseq-bounded/grammar.html
+
+This is a transitional version of deepseq-bounded, with stability
+of the grammar expected in early March for version 0.7.
+
+This also causes major version bumps to the seqaid and leaky packages.
+To update everything, issue
+
+  cabal update
+  cabal install --reinstall --force-reinstalls seqaid
+
+which reinstalls the latest deepseq-bounded in passing. And also
+if you were to run "seqaid demo" it will use the updated version
+of leaky, so everything's up to date.
+
+The homepage for these projects starts at
+
+  http://www.fremissant.net/deepseq-bounded-seqaid-leaky.html
+
+Kind Regards,
+Andrew
+

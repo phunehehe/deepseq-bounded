@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>deepseq-bounded v.0.5 6 7 transition</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<link rel="stylesheet" href="style.css" />
+<style>
+tt { background: transparent; font-size: 90%; }
+</style>
+</head>
+
+<body>
+
+<!--div class="main"-->
+<div class="main" style="font-size: 16pt;">
+
+<h3 style="margin-top: 50px;">deepseq-bounded 0.5 &rarr; 0.6 (and plans for 0.7)</h3>
+
+<p style="margin-top: 10px;">
+This document accompanies the release of deepseq-bounded-0.6.0.0, which makes some API breaking changes.
+Only changes which are API breaking are discussed here.
+(Refer to the <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/changelog">changelog</a> and <a href="http://www.fremissant.net/deepseq-bounded">homepage</a> documents for more information, in addition to more specific documents cited below.)
+<p>
+Nobody seems to care at the moment (just as well in flux of nascency), but I feel somehow morally obligated to provide this library, and ill-documented software is shoddy, how ever-miraculously the fancy types fit together. <b><tt style="letter-spacing: -5px;">`^</tt><tt style="letter-spacing: -4px;">&#546;(</tt></b>
+<p>
+API breaking changes consist of module renamings, pattern DSL syntax tweaks, and <tt>PatNode</tt> data type changes.
+Also there are some new flags, and the roles of certain flags have changed slightly.
+Please refer to the <tt>deepseq-bounded.cabal</tt> <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0#flags">package description</a> for flag documentation, including remarks about changes and deprecation.
+
+<p>
+There is a flag (<tt>NEW_IMPROVED_PATTERN_GRAMMAR</tt>, True by default) which, set to False, will restore the old pattern syntax of version 0.5.*, while still allowing you to enjoy bug fixes and code improvements since version 0.5.5, and continuing as version 0.6 progresses towards 0.7.
+<p>
+However, in the version 0.7 release this compatibility flag will likely be removed, so please try to avoid reliance on the flags characterised as deprecated...
+
+<p>
+Finally a mention is in order, that at least fifteen new modules were necessary to organise the support for both old and new grammars and <tt>PatNode</tt> definitions.
+It seems I&rsquo;ve managed not to expose any in the API however!
+(Wasn&rsquo;t the case in the first draft of this paragraph; come to think of it, it was this paragraph that spurred me to un-expose the three that were still exposed...).
+These transient internal modules will be gone in 0.7.
+
+<h3 style="margin-top: 30px;">API breaking changes in 0.5.5 -&gt; 0.6.0.0</h3>
+
+<ul>
+<li> Module renamings (all are prefixed <tt>Control.DeepSeq.Bounded</tt>):
+  <ul>
+  <li> <tt>Generics</tt> &rarr; <tt>Generic</tt>
+  <li> (and <tt>Generics.*</tt> &rarr; <tt>Generic.*</tt>)
+  <li> <tt>PatAlg</tt> &rarr; <tt>PatUtil</tt>&nbsp;&nbsp;(also&nbsp;&nbsp;<tt>isSubPatOf</tt> &rarr; <tt>subPat</tt>)
+  </ul>
+<li> Changed the pattern grammar considerably, for a number of benefits.
+     Refer to <a href="http://fremissant.net/deepseq-bounded/grammar.html">this document</a> for details of the old and new grammars, and some discussion.
+
+<li> Changed
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html:t:PatNode"><tt>PatNode</tt></a>
+(compare <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html:t:PatNode">version 5</a> <tt>PatNode</tt>)
+so that constructors all take a single parameter of (new) type <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html:t:PatNodeAttrs"><tt>PatNodeAttrs</tt></a>.  This simplified the <tt>PatNode</tt> type itself, which is more uniform, and has fewer constructors (and will have even fewer by version 0.7).
+</ul>
+
+<h3 style="margin-top: 30px;">Related changes planned for 0.7.0.0 <span style="font-size: 80%; font-weight: normal;">(ETA early March)</span></h3>
+
+<ul>
+<li> The backwards compatibility flag <tt>NEW_IMPROVED_PATTERN_GRAMMAR</tt> will be removed, and only the new grammar will remain available.
+<li> Also, the module structure will become simpler in consequence. At present, there are at lest fifteen extra modules, just to organise the support for both old and new grammars and <tt>PatNode</tt> definitions.
+<li> The flag <tt>PARALLELISM_EXPERIMENT</tt> is only used in the old grammar code, and will be removed as well (<tt>USE_PAR_PATNODE</tt> is the equivalent in the new grammar, along with a half dozen other new capabilities).
+<li> Type-constrained <tt>PatNode</tt>&rsquo;s, and the type-reflective <tt>NFDataPDyn</tt> facilities, will become stabilised -- at present, these are quite experimental, and haven&rsquo;t recevied much attention because <a href="http://hackage.haskell.org/package/seqaid">seqaid</a> provides a more powerful approach. But if the features are to stay in deepseq-bounded at all, they should be finished properly...
+<li> In particular, the type-constrained <tt>PatNode</tt>&rsquo;s <tt>TI</tt>, <tt>TR</tt>, <tt>TN</tt> and <tt>TW</tt> will be obsoleted, with type constraints being handled just like any other attribute (<tt>PatNodeAttrs</tt>) of the <tt>PatNode</tt>. The urge to do this will probably be the main push bumping to 0.7, but the refactoring is a big one and I don&rsquo;t want to rush it for 0.6 (which already feels overdue to me).
+<li> <span class="red">As of 0.6.1.0, we now have an H98 parser for the new grammar.</span> Also, 0.6.0.*, if built with <tt>HASKELL98_FRAGMENT</tt> True, lacks pattern DSL facilities (except <tt>showPat</tt>). This is because attoparsec is not H98. There will be an H98 alternative parser again soon, probably by version 0.6.1.0.
+</ul>
+
+<p>
+There will be other changes for 0.7 (probably a few API breaking), but whatever they will be, they&rsquo;re probably independent of the changes we&rsquo;re focused on for the bump 0.5 &rarr; 0.6.  Possibly this document will be evolved to cover those changes too, as well as non-API-breaking changes that are ongoing...
+
+<div class="footer" style="margin-top: 30px;">
+Andrew Seniuk
+<br>
+Jan. 15, 2014
+<br>
+<tt>rasfar@gmail.com</tt>
+</div>
+
+</div>
+
+<script language="javascript">
+function toggle(id1){
+  var ele_s = document.getElementById(id1+"s");
+  var ele_h = document.getElementById(id1+"h");
+  var ele = document.getElementById(id1);
+  if( ele.style.display == "inline-block" ){
+    ele.style.display = "none";
+    ele_s.style.display = "inline-block";
+    ele_h.style.display = "none";
+  }else{
+    ele.style.display = "inline-block";
+    ele_s.style.display = "none";
+    ele_h.style.display = "block";
+  }
+}
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Pattern DSL for deepseq-bounded</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<link rel="stylesheet" href="style.css" />
+<style>
+tt { background: transparent; }
+.open { color: #000; font-weight: normal; font-style: italic; }
+.meta2 { color: #448; font-weight: normal; font-style: italic; }
+.meta2b { color: #448; font-weight: normal; font-style: italic; font-size: 100%; }
+.meta { color: #BB0; font-weight: normal; font-style: normal; font-size: 130%; }
+/*
+.meta { color: #BB0; font-weight: normal; font-style: normal; font-size: 120%; }
+*/
+.bmeta { color: #BB0; font-weight: bold; font-style: normal; font-size: 120%; }
+/*
+.meta { color: #AA0; font-weight: normal; font-style: italic; }
+.bmeta { color: #AA0; font-weight: bold; font-style: italic; }
+*/
+.ameta { color: #DD0; font-weight: bold; font-style: normal; font-size: 130%; }
+/*
+.ameta { color: #DD0; font-weight: bold; font-style: normal; font-size: 120%; }
+*/
+.ametafaint { color: rgba(220,220,0,0.2); font-weight: bold; font-style: normal; font-size: 120%; }
+.conc { color: #E30; font-weight: bold; font-style: normal; }
+.conc2 { color: #E30; font-weight: bold; font-style: normal; font-size: 110%; }
+</style>
+</head>
+
+<body>
+
+<div class="main">
+<!--div class="main" style="font-size: 14pt;"-->
+
+<h3 style="margin-top: 50px;">Grammar for <tt class="virgin" style="font-size: 90%;">Control.DeepSeq.Bounded.Pattern</tt> Language</h3>
+
+<!--p style="margin-top: 16px;">
+<div style="color: #F33; font-size: 80%;">
+This change is in 0.6.&nbsp;&nbsp;All related online documents<br />have been revised to use the <em>new</em> grammar.
+</div-->
+
+<p style="margin-top: 16px;">
+The current grammar for the deepseq-bounded <tt>Pattern</tt> DSL is:
+
+<a id="new-grammar"></a>
+<p style="margin-bottom: 30px;">
+<pre>
+  <b>New Grammar</b> (deepseq-bounded &gt;=0.6)<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">pat</span>          <span class="meta">&rarr;</span>  <span class="meta">[</span> <span class="meta2">modifiers</span> <span class="meta">]</span><span style="margin-left: 6px;">&nbsp;</span><span class="meta2">pat'</span><div style="margin: 0px; padding:0px; clear: both; height: 4px">&nbsp;</div>  <span class="meta2">pat'</span>         <span class="meta">&rarr;</span>  <span class="ametafaint">|</span>  <span class="conc">.</span> <span class="ameta"> | </span> <span class="conc" style="font-size: 120%;">!</span> <span class="ameta"> | </span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="ameta"> | </span> <span class="conc2">(</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc2">)</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">modifiers</span>    <span class="meta">&rarr;</span>  <span class="open">zero or one of each of the eight</span> <span class="meta2">modifier</span><span class="open">, in any order</span>
+  <span class="meta2">modifier</span>     <span class="meta">&rarr;</span>  <span class="ametafaint">|</span>  <span class="conc">=</span> <span class="ameta"> | </span> <span class="conc">+</span> <span class="ameta"> | </span> <span class="conc">^</span> <span class="ameta"> | </span> <span class="conc">/</span> <span class="ameta"> | </span> <span class="conc">%</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">:</span> <span class="meta2">typename</span> <span class="meta">{</span> <span class="conc">;</span> <span class="meta2">typename</span> <span class="meta">}</span> <span class="conc">:</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">@</span> <span class="meta2">decimalint</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">></span> <span class="meta2">permutation</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">typename</span>     <span class="meta">&rarr;</span>  <span class="open">string containing neither</span> <span class="conc">:</span> <span class="open">(unless <span class="meta2">escaped</span><span class="open">), nor <span class="conc">;</span>
+  <span class="meta2">escaped</span>      <span class="meta">&rarr;</span>  <span class="conc">\\:</span>
+  <span class="meta2">decimalint</span>   <span class="meta">&rarr;</span>  <span class="open">digit string not beginning with zero</span>
+  <span class="meta2">permutation</span>  <span class="meta">&rarr;</span>  <span class="open">of an initial part of the lowercase alphabet, e.g.</span> <span class="conc">cdba</span>
+</pre>
+
+<p>
+Here <tt class="virgin"><span class="meta" style="font-weight: bold; font-size: 110%;">gold</span></tt> and <span class="meta2" style="font-weight: bold;">blue</span> are meta-syntax, <tt class="virgin"><span class="conc" style="font-size: 110%;">red</span></tt> is concrete lexical syntax, and <tt class="virgin"><span class="open" style="font-weight: bold; font-size: 110%;">black</span></tt> is informal description.
+
+<p>
+<ul>
+<li>
+<tt class="virgin">
+<span class="bmeta">{</span></tt>&hellip;<tt><span class="bmeta">}</span>
+</tt>
+means &ldquo;zero or more repetitions of the enclosed&rdquo;.
+<li>
+<tt class="virgin">
+<span class="bmeta">[</span></tt>&hellip;<tt><span class="bmeta">]</span>
+</tt> 
+means &ldquo;zero or one occurrence of the enclosed&rdquo;.
+<li>
+<tt class="virgin">
+</tt>&hellip;<tt><span class="ameta">|</span></tt>&hellip;<tt>
+</tt> 
+signifies a group of two or more alternatives, exactly one of which must be selected. This important metasyntax is more brightly tinted, to help it stand out.
+<!--
+<li>
+<tt class="virgin">
+<span class="bmeta">(</span></tt>&hellip;<tt><span class="bmeta">)</span>
+</tt> 
+groups meta-expressions, useful for nested alternation.
+-->
+</ul>
+
+<p>
+Optional whitespace can go between any two tokens (basically,
+anyplace there is space shown in the grammar above).
+
+<p>
+Semicolons never need escaping, because they&rsquo;re already illegal
+as part of any Haskell type name.
+
+<p>
+The semantics are given formally in the
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#t:PatNode">PatNode</a>
+and
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#t:PatNodeAttrs">PatNodeAttrs</a>
+documentation, as well as informally in the <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#t:PatNodeAttrs">examples</a> just below that, and through the project <a href="http://www.fremissant.net/deepseq-bounded">homepage</a>.
+
+<hr class="hrule" style="margin-top: 40px;"/>
+
+<p style="margin-top: 40px;">
+Notable changes from 0.5.5 are:
+
+<ul>
+<li>
+<span class="conc">.</span>
+became <span class="conc">!</span>&nbsp;
+(<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:WS">WS</a> pattern nodes)
+<li>
+<span class="conc">#</span>
+became <span class="conc">.</span>&nbsp;
+(<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:WS">WI</a> pattern nodes)
+<li> braces (<span class="conc">{</span>&hellip;<span class="conc">}</span>) became parentheses (<span class="conc">(</span>&hellip;<span class="conc">)</span>)
+<li> semicolon (instead of space) used to separate <span class="meta2">typename</span>s
+<li> <span class="conc">()</span> (empty subpattern group, formerly using braces of course) is no longer used to terminate type constraint lists for
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:TI">TI</a>,
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:TN">TN</a>, and
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:TW">TW</a> pattern nodes;
+rather, a single colon is used
+<li> a single colon is now also required to terminate <span class="meta2">typename</span> lists in
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:TR">TR</a>
+pattern nodes, which formerly were implicitly closed by the opening brace of the ensuing subpattern group (which must be present)
+<li> the language was enriched with seven new, prefix modifiers (called attributes in the API; refer to
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#t:PatNodeAttrs">PatNodeAttrs</a>)
+<li> type-constraint was made simply an eighth prefix modifer (formerly postfix; now only depth for <tt>*N</tt> nodes is postfix).
+</ul>
+
+<p style="margin-top: 40px;">
+There were also a few things which were almost changed, but decided against for 0.6.
+These may or may not end up in 0.7.
+
+<ul>
+<li> the <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:WS">WS</a> pattern node was almost removed from the language, since it is expressible as <span class="conc"><tt>*1</tt></span>, but it is too convenient in testing and examples to sacrifice a single-character designation
+<li> the <a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:TI">T*</a> pattern nodes are probably going to get absorbed by 
+<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#t:PatNodeAttrs">PatNodeAttrs</a>
+in a way analogous to what happened to <span class="nowrap">the <span class="conc">=</span>
+(<a href="http://hackage.haskell.org/package/deepseq-bounded-0.6.0.0/docs/Control-DeepSeq-Bounded-Pattern.html#v:doSpark">doSpark</a>)</span>
+</ul>
+
+<p>
+Up until version 0.7, flags are available to revert to the old grammar (or to turn off certain changes only), while allowing you to continue to enjoy some of the code improvements since 0.5.5.
+However, use of the new grammar is strongly encouraged, the old grammar is deprecated and support will probably be dropped in 0.7.
+
+<hr class="hrule" style="margin-top: 60px;"/>
+
+<p style="margin-top: 40px;">
+The rest of this page details earlier versions of the grammar, and discusses some rationales behind the changes leading to the above, present syntax.
+
+<p>
+One additional bit of metasyntax is used below:
+<ul>
+<li>
+<tt class="virgin">
+<span class="bmeta">(</span></tt>&hellip;<tt><span class="bmeta">)</span>
+</tt> 
+groups meta-expressions, useful for nested alternation.
+</ul>
+
+<p>
+First, we have the grammar for all versions of <tt>deepseq-bounded</tt> up to and including 0.5.5:
+
+<p style="margin-bottom: 30px;">
+<pre>
+  <b>Old Grammar</b> (deepseq-bounded &lt;0.6)<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">pat</span> <span class="meta">&rarr;</span>  <span class="meta">[</span> <span class="conc">=</span> <span class="meta">]</span> <span class="conc">.</span> <span class="meta">[</span> <span class="conc">{</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc">}</span> <span class="meta">]</span>
+      <span class="ameta">|</span>  <span class="meta">(</span> <span class="meta">[</span> <span class="conc">=</span> <span class="meta">]</span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="ameta"> | </span> <span class="conc">#</span> <span class="meta">)</span>
+      <span class="ameta">|</span>  <span class="conc">.:</span> <span class="meta2">ctorname</span> <span class="meta">{</span> <span class="meta2">space</span> <span class="meta2">ctorname</span> <span class="meta">}</span> <span class="conc">{</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc">}</span>
+      <span class="ameta">|</span>  <span class="meta">(</span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="ameta"> | </span> <span class="conc">#</span> <span class="meta">)</span> <span class="conc">:</span> <span class="meta2">typename</span> <span class="meta">{</span> <span class="meta2">space</span> <span class="meta2">typename</span> <span class="meta">}</span> <span class="conc">{}</span>
+  <span class="meta2">ctorname</span> <span class="meta">&rarr;</span> <span class="open">string not containing whitespace</span>
+  <span class="meta2">typename</span> <span class="meta">&rarr;</span> <span class="open">string not containing whitespace</span>
+  <span class="meta2">decimalint</span> <span class="meta">&rarr;</span> <span class="open">digit string not beginning with zero</span>
+  <span class="meta2">space</span> <span class="meta">&rarr;</span> <span class="open">space character ASCII 0x32</span>
+</pre>
+
+<p style="margin-top: 45px;">
+And below is a simpler variant of the language that I&rsquo;m in the process of changing over to, starting at the upcoming <tt>deepseq-bounded-0.6.0.0</tt>.
+It has less verbose concrete syntax, so the pattern strings are more concise with higher information density.
+
+<p>
+The difference is mostly cosmetic, although the new grammar is slightly more expressive, permitting <span class="conc">=</span> on any pattern, not only the ones it would seem worthwhile to parallelise.
+
+<p>
+This could even be useful, since a single node might represent an expensive computation, so if we wanted to force this node, it might pay to parallelise the forcing.
+And <span class="conc">=#</span> might make sense to measure parallelisation overhead.
+Essentially, there&rsquo;s no use complicating the language by constraining it:
+there are always possible uses just beyond the horizon of consideration.
+
+<a id="new-grammar"></a>
+<p style="margin-bottom: 30px;">
+<pre>
+  <b>Transitional Grammar</b> (unpublished deepseq-bounded version)<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">pat</span>          <span class="meta">&rarr;</span>  <span class="meta">[</span> <span class="meta2">modifiers</span> <span class="meta">]</span><span style="margin-left: 6px;">&nbsp;</span><span class="meta2">pat'</span><div style="margin: 0px; padding:0px; clear: both; height: 4px">&nbsp;</div>  <span class="meta2">pat'</span>         <span class="meta">&rarr;</span>  <span class="ametafaint">|</span>  <span class="conc">#</span> <span class="ameta"> | </span> <span class="conc" style="font-size: 120%;">.</span> <span class="ameta"> | </span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="ameta"> | </span> <span class="conc">{</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc">}</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">|</span>  <span class="conc">:</span> <span class="meta2">ctorname</span> <span class="meta">{</span> <span class="conc">:</span> <span class="meta2">ctorname</span> <span class="meta">}</span> <span class="conc">{</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc">}</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">|</span>  <span class="meta">(</span> <span class="conc">#</span> <span class="ameta"> | </span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="meta">)</span> <span class="conc">::</span> <span class="meta2">typename</span> <span class="meta">{</span> <span class="conc">:</span> <span class="meta2">typename</span> <span class="meta">}</span> <span class="conc">{}</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">ctorname</span>     <span class="meta">&rarr;</span>  <span class="meta2">typename</span>
+  <span class="meta2">typename</span>     <span class="meta">&rarr;</span>  <span class="open">string containing neither</span> <span class="conc">:</span> <span class="open">(unless <span class="meta2">escaped</span><span class="open">), nor <span class="conc">{</span>
+  <span class="meta2">escaped</span>      <span class="meta">&rarr;</span>  <span class="conc">\:</span>
+  <span class="meta2">decimalint</span>   <span class="meta">&rarr;</span>  <span class="open">digit string not beginning with zero</span>
+  <span class="meta2">modifiers</span>    <span class="meta">&rarr;</span>  <span class="open">zero or one of each of the seven</span> <span class="meta2">modifier</span><span class="open">, in any order</span>
+  <span class="meta2">modifier</span>     <span class="meta">&rarr;</span>  <span class="ametafaint">|</span>  <span class="conc">=</span> <span class="ameta"> | </span> <span class="conc">+</span> <span class="ameta"> | </span> <span class="conc">^</span> <span class="ameta"> | </span> <span class="conc">/</span> <span class="ameta"> | </span> <span class="conc">%</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">@</span> <span class="meta2">decimalint</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">></span> <span class="meta2">permutation</span>
+  <span class="meta2">permutation</span>  <span class="meta">&rarr;</span>  <span class="open">of an initial part of the lowercase alphabet, e.g.</span> <span class="conc">cdba</span>
+</pre>
+  <!--span class="meta2">escaped</span> <span class="meta">&rarr;</span> <span class="conc">\{</span> <span class="ameta">|</span> <span class="conc">\:</span-->
+
+<p style="margin-top: 40px;">
+It still requires some thought, whether <span class="conc">#</span> should be allowed a type constraint, and maybe a few other wee questions of that nature, before stabilising the language until at least <span class="nowrap">version 1.*.</span>
+The language may <span class="nowrap">grow &mdash;</span> for example, we may add <tt>pseq</tt> node types as we did for <span class="nowrap"><tt>par</tt> &mdash;</span> but the core presented here should remain valid and effectual.
+
+<p>
+<a id="dig01s" class="dig-toggle-show" href='javascript:toggle("dig01");' style="margin-left: 0px;">Show</a>
+<div id="dig01" class="digression" style="margin-left: 0px;">
+<a id="dig01h" style="margin-bottom: -16px;" class="dig-toggle-show" href='javascript:toggle("dig01");'>Hide</a><p style="margin-bottom: -10px;">
+<p>
+<!--div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div-->
+<div style="margin-bottom: 0px;">
+Note that if allow merely <span class="conc">:</span> instead of <span class="conc">::</span> for the <span class="meta2b">typename</span>-constrained case, there are two possible parses of
+<pre class="virgin">
+   #:(Int,Bool){}
+</pre>
+namely, using the old syntax to resolve the ambiguity for sake of illustration:
+<pre class="virgin">
+   #.:(Int,Bool){}     -- two nodes, # and .
+</pre>
+versus
+<pre class="virgin">
+   #:(Int,Bool){}      -- one type-qualified # node
+</pre>
+
+We could also keep the <span class="conc">.</span>&nbsp;&nbsp;<em>just</em> in type-qualified <span class="nowrap">contexts <span class="conc">.:</span>,</span> but that would overload <span class="nowrap"><span class="conc">.</span> unpleasantly,</span> besides placing the burden of verbosity on the (perhaps) more common <span class="nowrap"><tt>TR</tt> nodes.</span>
+</div>
+</div>
+
+<p>
+So, we need an <span class="nowrap">extra <span class="conc">:</span></span> in one production alternative, and <span class="nowrap">shed <span class="conc">.</span></span> in another.
+<span class="nowrap">But the</span> latter is the most frequent <span class="meta2b">pat</span> alternative <span class="nowrap">(<span class="conc">{</span> <span class="meta">{</span> <span class="meta2b">pat</span> <span class="meta">}</span> <span class="conc">}</span>)</span>, and with only two characters instead of the three <span class="nowrap">(<span class="conc">.{</span> <span class="meta">{</span> <span class="meta2b">pat</span> <span class="meta">}</span> <span class="conc">}</span>)</span> of the old grammar, the result is <a href="deepseq-bounded.html#newsyntax">noticeably trimmer</a> concrete syntax.
+
+<p>
+<a id="dig02s" class="dig-toggle-show" href='javascript:toggle("dig02");' style="margin-left: 0px;">Show</a>
+<div id="dig02" class="digression" style="margin-left: 0px;">
+<a id="dig02h" style="margin-bottom: -16px;" class="dig-toggle-show" href='javascript:toggle("dig02");'>Hide</a><p style="margin-bottom: -10px;">
+<p>
+It would be possible to keep single-colon type qualification designators in all cases, if we required * and # to be written *{} and #{}.
+That is very tempting, except it feels harsh to give up the plain simplicity and symmetry of the bare symbols, and the {}&rsquo;s are, after all, completely perfunctory and, far from conveying useful meaning, actually falsely suggest we are matching only unary nodes. (In the * case this is not logically a likely idea, but in the # case it can be.)
+And you have to consider also, what part of the syntax are you making less elegant, in exchange for more elegant type constraint syntax?
+Because I haven&rsquo;t seen a huge motivation to use type-constrained pattern nodes yet!...
+<p>
+Yet another, comparatively menial consideration which led to a last-minute concrete syntax change today:
+(Re)using colon as type list separator (was whitespace before).
+This is preferable to whitespace, for the simple reason that whitespace is more common in type rep strings (<tt>Maybe Int</tt>, etc.) than is colon, so the more common symbol (whitespace) should be allowed un-escaped.
+Colon is the most economical choice (even including whitespace!) since semantically, colon is already being used exclusively to signal the beginning of such a type list!
+<p>
+Note that, in any case (and this wasn&rsquo;t appreciated before), when you&rsquo;re parsing a type list for a constraint, the parsing context is specific to that, and you can treat things differently -- you&rsquo;re only waiting for the stop character (or separator, or escape). So in particular, whitespace could have reserved special meaning within type constraints, and yet be used freely (say for verical alignment of constant pattern strings for visual HCI convenience) to space the other characters in the pattern.
+<p>
+Yes, I&rsquo;d like that about the whitespace in.
+<p>
+This does mean the [currently enabled!]&nbsp;&nbsp;&lsquo;<tt> </tt>&rsquo;-for-&lsquo;#&rsquo;&nbsp;&nbsp;thing must go...
+(I do like it faded to light grey in the HTML docs though; keep that.)
+
+</div>
+
+<p style="margin-top: 16px;">
+The next rendition changed some concrete lexemes, among other things:
+
+<a id="new-grammar"></a>
+<p style="margin-bottom: 30px;">
+<pre>
+  <b>Penultimate Grammar</b> (deepseq-bounded 0.6.0.0 candidate)<div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">pat</span>          <span class="meta">&rarr;</span>  <span class="meta">[</span> <span class="meta2">modifiers</span> <span class="meta">]</span><span style="margin-left: 6px;">&nbsp;</span><span class="meta2">pat'</span><div style="margin: 0px; padding:0px; clear: both; height: 4px">&nbsp;</div>  <span class="meta2">pat'</span>         <span class="meta">&rarr;</span>  <span class="ametafaint">|</span>  <span class="conc">.</span> <span class="ameta"> | </span> <span class="conc" style="font-size: 120%;">!</span> <span class="ameta"> | </span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="ameta"> | </span> <span class="conc2">(</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc2">)</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">|</span>  <span class="conc">:</span> <span class="meta2">ctorname</span> <span class="meta">{</span> <span class="conc">;</span> <span class="meta2">ctorname</span> <span class="meta">}</span> <span class="conc">:</span> <span class="conc2">(</span> <span class="meta">{</span> <span class="meta2">pat</span> <span class="meta">}</span> <span class="conc2">)</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">|</span>  <span class="meta">(</span> <span class="conc">.</span> <span class="ameta"> | </span> <span class="conc">*</span> <span class="meta">[</span> <span class="meta2">decimalint</span> <span class="meta">]</span> <span class="meta">)</span> <span class="conc">::</span> <span class="meta2">typename</span> <span class="meta">{</span> <span class="conc">;</span> <span class="meta2">typename</span> <span class="meta">}</span> <span class="conc">:</span><div style="margin: 0px; padding:0px; clear: both; height: 8px">&nbsp;</div>  <span class="meta2">ctorname</span>     <span class="meta">&rarr;</span>  <span class="meta2">typename</span>
+  <span class="meta2">typename</span>     <span class="meta">&rarr;</span>  <span class="open">string containing neither</span> <span class="conc">:</span> <span class="open">(unless <span class="meta2">escaped</span><span class="open">), nor <span class="conc">;</span>
+  <span class="meta2">escaped</span>      <span class="meta">&rarr;</span>  <span class="conc">\:</span>
+  <span class="meta2">decimalint</span>   <span class="meta">&rarr;</span>  <span class="open">digit string not beginning with zero</span>
+  <span class="meta2">modifiers</span>    <span class="meta">&rarr;</span>  <span class="open">zero or one of each of the seven</span> <span class="meta2">modifier</span><span class="open">, in any order</span>
+  <span class="meta2">modifier</span>     <span class="meta">&rarr;</span>  <span class="ametafaint">|</span>  <span class="conc">=</span> <span class="ameta"> | </span> <span class="conc">+</span> <span class="ameta"> | </span> <span class="conc">^</span> <span class="ameta"> | </span> <span class="conc">/</span> <span class="ameta"> | </span> <span class="conc">%</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">@</span> <span class="meta2">decimalint</span>
+                 <span class="meta" style="color: transparent;">&rarr;</span><span class="ameta">| </span> <span class="conc">></span> <span class="meta2">permutation</span>
+  <span class="meta2">permutation</span>  <span class="meta">&rarr;</span>  <span class="open">of an initial part of the lowercase alphabet, e.g.</span> <span class="conc">cdba</span>
+</pre>
+
+<p>
+And the much trimmer final grammar you find at the top of the page was the result of making type-constraint just another prefix modifier.
+
+<div class="footer" style="margin-top: 30px;">
+Andrew Seniuk
+<br>
+Dec. 2014 / Jan. 2015
+<br>
+<tt>rasfar@gmail.com</tt>
+</div>
+
+</div>
+
+<script language="javascript">
+function toggle(id1){
+  var ele_s = document.getElementById(id1+"s");
+  var ele_h = document.getElementById(id1+"h");
+  var ele = document.getElementById(id1);
+  if( ele.style.display == "inline-block" ){
+    ele.style.display = "none";
+    ele_s.style.display = "inline-block";
+    ele_h.style.display = "none";
+  }else{
+    ele.style.display = "inline-block";
+    ele_s.style.display = "none";
+    ele_h.style.display = "block";
+  }
+}
+</script>
+
+</body>
+</html>
+

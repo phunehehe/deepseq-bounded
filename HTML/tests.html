@@ -1,0 +1,1874 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>deepseq-bounded test output</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+</head>
+<body>
+<pre>
+<span style="color: #00F; font-weight: bold;">&gt;&gt;</span> main
+Running tests for deepseq-bounded...
+Cases: 1  Tried: 0  Errors: 0  Failures: 0
+
+Testing.
+
+Note that  __ = undefined  (abbrev. occurring in what follows).
+
+Testing showPat
+---------------
+input:                       Node WW []
+expect: *
+   got: *
+input:                       Node WI []
+expect: .
+   got: .
+input:                       Node WS []
+expect: !
+   got: !
+input:                       Node WR []
+expect: ()
+   got: ()
+input:                       Node WR [Node WW []]
+expect: (*)
+   got: (*)
+input:                       Node WR [Node WW [],Node WW []]
+expect: (**)
+   got: (**)
+input:                       Node WR [Node WS [],Node WW []]
+expect: (!*)
+   got: (!*)
+input:                       Node WR [Node WI [],Node WS []]
+expect: (.!)
+   got: (.!)
+input:                       Node WR [Node WI []]
+expect: (.)
+   got: (.)
+input:                       Node WR [Node WR [Node WI []]]
+expect: ((.))
+   got: ((.))
+input:                       Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI []],Node WW [],Node WW [],Node WI [],Node WW []],Node WI [],Node WW []]
+expect: (*.(*.(*.)**.*).*)
+   got: (*.(*.(*.)**.*).*)
+input:                       Node WR [Node WI [],Node WS [],Node WR [Node WN 23 [],Node WW []]]
+expect: (.!(*23*))
+   got: (.!(*23*))
+input:                       Node WR [Node WI [],Node =WR [Node =WN 23 [],Node WW []],Node WW []]
+expect: (.=(=*23*)*)
+   got: (.=(=*23*)*)
+input:                       Node TR (Int) []
+expect: :Int:()
+   got: :Int:()
+input:                       Node TN 23 (Int) []
+expect: :Int:*23
+   got: :Int:*23
+input:                       Node TW (Int) []
+expect: :Int:*
+   got: :Int:*
+input:                       Node TI (Int) []
+expect: :Int:.
+   got: :Int:.
+input:                       Node =TR (Int) []
+expect: =:Int:()
+   got: =:Int:()
+input:                       Node =TN 23 (Int) []
+expect: =:Int:*23
+   got: =:Int:*23
+input:                       Node =TW (Int) []
+expect: =:Int:*
+   got: =:Int:*
+input:                       Node =TI (Int) []
+expect: =:Int:.
+   got: =:Int:.
+input:                       Node =TR ([Int]) []
+expect: =:[Int]:()
+   got: =:[Int]:()
+input:                       Node =TW ([Int]) []
+expect: =:[Int]:*
+   got: =:[Int]:*
+input:                       Node =TN 23 ([Int]) []
+expect: =:[Int]:*23
+   got: =:[Int]:*23
+input:                       Node =+^WR []
+expect: =+^()
+   got: =+^()
+input:                       Node =+^TN 23 ([Int]) []
+expect: =+^:[Int]:*23
+   got: =+^:[Int]:*23
+
+Pattern                       Compiles to
+-----------------------------------------
+.                             Node WI []
+!                             Node WS []
+*                             Node WW []
+*!                            Node WR [Node WW [],Node WS []]
+()                            Node WR []
+(.)                           Node WR [Node WI []]
+(*)                           Node WR [Node WW []]
+(**)                          Node WR [Node WW [],Node WW []]
+(!*)                          Node WR [Node WS [],Node WW []]
+(.!)                          Node WR [Node WI [],Node WS []]
+(.(.))                        Node WR [Node WI [],Node WR [Node WI []]]
+((.))                         Node WR [Node WR [Node WI []]]
+(.(().))                      Node WR [Node WI [],Node WR [Node WR [],Node WI []]]
+(*.*.*.**.*.*)                Node WR [Node WW [],Node WI [],Node WW [],Node WI [],Node WW [],Node WI [],Node WW [],Node WW [],Node WI [],Node WW [],Node WI [],Node WW []]
+(*.(*.(*.)*)*(.*).*)          Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI []],Node WW []],Node WW [],Node WR [Node WI [],Node WW []],Node WI [],Node WW []]
+(*.(*.(*.)*)*.*)              Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI []],Node WW []],Node WW [],Node WI [],Node WW []]
+(*.(*.(*.)*)(*)(.*).*)        Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI [],Node WR [Node WW [],Node WI []],Node WW []],Node WR [Node WW []],Node WR [Node WI [],Node WW []],Node WI [],Node WW []]
+((!(!)(((!).!(!))))!(!(!)))   Node WR [Node WR [Node WS [],Node WR [Node WS []],Node WR [Node WR [Node WR [Node WS []],Node WI [],Node WS [],Node WR [Node WS []]]]],Node WS [],Node WR [Node WS [],Node WR [Node WS []]]]
+*23                           Node WN 23 []
+(.!(*23*))                    Node WR [Node WI [],Node WS [],Node WR [Node WN 23 [],Node WW []]]
+:Int:                         compilePat: input not completely consumed
+Input remaining: :Int:
+Patterns so far parsed: []
+:Int:()                       Node TR (Int) []
+:Int:!                        compilePat: input not completely consumed
+Input remaining: :Int:!
+Patterns so far parsed: []
+:Int.                         compilePat: input not completely consumed
+Input remaining: :Int.
+Patterns so far parsed: []
+:Int:.                        Node TI (Int) []
+:Int:*                        Node TW (Int) []
+:Int*23                       compilePat: input not completely consumed
+Input remaining: :Int*23
+Patterns so far parsed: []
+:Int:*23                      Node TN 23 (Int) []
+=.                            Node =WI []
+=!                            Node =WS []
+=*                            Node =WW []
+(.=(=*23*)*)                  Node WR [Node WI [],Node =WR [Node =WN 23 [],Node WW []],Node WW []]
+=:Int                         compilePat: input not completely consumed
+Input remaining: =:Int
+Patterns so far parsed: []
+=:Int:()                      Node =TR (Int) []
+=:Int:!                       compilePat: input not completely consumed
+Input remaining: =:Int:!
+Patterns so far parsed: []
+=:Int:.                       Node =TI (Int) []
+=:Int:*                       Node =TW (Int) []
+=:Int*23                      compilePat: input not completely consumed
+Input remaining: =:Int*23
+Patterns so far parsed: []
+=:Int:*23                     Node =TN 23 (Int) []
+=:[Int]:()                    Node =TR ([Int]) []
+=:[Int]:*                     Node =TW ([Int]) []
+=:[Int]:*23                   Node =TN 23 ([Int]) []
+=+^()                         Node =+^WR []
++^=()                         Node =+^WR []
+=+^:[Int]:*23                 Node =+^TN 23 ([Int]) []
+
+===================================================
+exp = (3.4, [5,__,7], __) :: (Float, [Int], Bool)
+get (_,xs,_) = show $ (xs!!2)
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = !..
+showPat.compilePat       = (!..)
+expected value           = syntax error
+actual value             = 7
+---------------------------------------------------
+patstr                   = (!..)
+showPat.compilePat       = (!..)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (().().())
+expected value           = 7 (but "# with subpattern" warning)
+showPat.compilePat       = (().().())
+actual value             = 7
+---------------------------------------------------
+patstr                   = *
+showPat.compilePat       = *
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (***)
+showPat.compilePat       = (***)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (...)
+showPat.compilePat       = (...)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*..)
+showPat.compilePat       = (*..)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (**.)
+showPat.compilePat       = (**.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (..*)
+showPat.compilePat       = (..*)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ((*.*).)
+expected value           = 7 (with silent pattern-match failure)
+showPat.compilePat       = ((*.*).)
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*...).)
+expected value           = 7 (with silent pattern-match failure)
+showPat.compilePat       = ((*...).)
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*....).)
+expected value           = 7 (with silent pattern-match failure)
+showPat.compilePat       = ((*....).)
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*....)!)
+expected value           = 7 (with silent pattern-match failure)
+showPat.compilePat       = ((*....)!)
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*.)*)
+showPat.compilePat       = ((*.)*)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*.).)
+showPat.compilePat       = ((*.).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*(.*)).)
+showPat.compilePat       = ((*(.*)).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((*(*.)).)
+showPat.compilePat       = ((*(*.)).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = ((((.*))).)
+expected value           = 7 (with silent pattern-match failure)
+showPat.compilePat       = ((((.*))).)
+actual value             = 7
+---------------------------------------------------
+patstr                   = (.(((.*))).)
+showPat.compilePat       = (.(((.*))).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (!(!(.(!!))).)
+showPat.compilePat       = (!(!(.(!!))).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (!(!(.*)).)
+showPat.compilePat       = (!(!(.*)).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*(*(.*)).)
+showPat.compilePat       = (*(*(.*)).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (..*)
+showPat.compilePat       = (..*)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.*)
+showPat.compilePat       = (*.*)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = :Tuple3:(*(*(.*)).)
+showPat.compilePat       = :Tuple3:(*(*(.*)).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :(,,):(*(*(.*)).)
+showPat.compilePat       = :(,,):(*(*(.*)).)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :(,,):(*(*(!*)).)
+showPat.compilePat       = :(,,):(*(*(!*)).)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = :Bool:(***)
+showPat.compilePat       = :Bool:(***)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :Bool*
+showPat.compilePat       = compilePat: input not completely consumed
+Input remaining: :Bool*
+Patterns so far parsed: []
+---------------------------------------------------
+patstr                   = :Bool:*
+showPat.compilePat       = :Bool:*
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :(,,):*
+showPat.compilePat       = :(,,):*
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.!)
+showPat.compilePat       = (*.!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:Bool:..)
+showPat.compilePat       = (*:Bool:..)
+expected value           = 7
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:Int:..)
+showPat.compilePat       = (*:Int:..)
+expected value           = 7
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:(,):..)
+showPat.compilePat       = (*:(,):..)
+expected value           = 7
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:OutOfScopeType:..)
+showPat.compilePat       = (*:OutOfScopeType:..)
+expected value           = 7
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:[Int]:..)
+showPat.compilePat       = (*:[Int]:..)
+expected value           = 7
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:[Int]:.!)
+showPat.compilePat       = (*:[Int]:.!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.:Bool:.)
+showPat.compilePat       = (*.:Bool:.)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*.:Int:.)
+showPat.compilePat       = (*.:Int:.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.:(,):.)
+showPat.compilePat       = (*.:(,):.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.:OutOfScopeType:.)
+showPat.compilePat       = (*.:OutOfScopeType:.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.:[Int]:.)
+showPat.compilePat       = (*.:[Int]:.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:[Int]:*.)
+showPat.compilePat       = (*:[Int]:*.)
+expected value           = Prelude.undefined
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*:Bool:*.)
+showPat.compilePat       = (*:Bool:*.)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*:Int:*.)
+showPat.compilePat       = (*:Int:*.)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*:(,):*.)
+showPat.compilePat       = (*:(,):*.)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*:OutOfScopeType:*.)
+showPat.compilePat       = (*:OutOfScopeType:*.)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*.:Bool:*)
+showPat.compilePat       = (*.:Bool:*)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*.:Int:*)
+showPat.compilePat       = (*.:Int:*)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*.:(,):*)
+showPat.compilePat       = (*.:(,):*)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (**2.)
+showPat.compilePat       = (**2.)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (**3.)
+showPat.compilePat       = (**3.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:G2:..)
+showPat.compilePat       = (*:G2:..)
+expected value           = 7
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (*:Int:..)
+showPat.compilePat       = (*:Int:..)
+expected value           = 7
+actual value             = Prelude.undefined
+--------------------------------------------------
+===================================================
+exp = (G1, G2 5 __ 7, __) :: (TG, TG, Bool)
+get (_,(G2 _ _ n),_) = n
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = (*:G2:..)
+showPat.compilePat       = (*:G2:..)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (*:Int:..)
+showPat.compilePat       = (*:Int:..)
+expected value           = 7
+actual value             = 7
+--------------------------------------------------
+===================================================
+exp = G2 5 __ 7 :: TG
+get (G2 _ _ n) = n
+? = get $ forcep patstr exp
+===================================================
+patstr                   = *
+showPat.compilePat       = *
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = *0
+showPat.compilePat       = *0
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = *1
+showPat.compilePat       = *1
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = *2
+showPat.compilePat       = *2
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = *3
+showPat.compilePat       = *3
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (!.!)
+showPat.compilePat       = (!.!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (!!!)
+showPat.compilePat       = (!!!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (!!)
+showPat.compilePat       = (!!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = (!!!)
+showPat.compilePat       = (!!!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (!!!!)
+showPat.compilePat       = (!!!!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G1:(!!)
+showPat.compilePat       = :G1:(!!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G1:(!!!)
+showPat.compilePat       = :G1:(!!!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G2:(!!)
+showPat.compilePat       = :G2:(!!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G2:(!!!)
+showPat.compilePat       = :G2:(!!!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = :TG:(!!!)
+showPat.compilePat       = :TG:(!!!)
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G1:*
+showPat.compilePat       = :G1:*
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G2:*
+showPat.compilePat       = :G2:*
+expected value           = Prelude.undefined
+actual value             = 7
+---------------------------------------------------
+patstr                   = :TG:*
+showPat.compilePat       = :TG:*
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :Int:.
+showPat.compilePat       = :Int:.
+expected value           = Prelude.undefined
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G1:.
+showPat.compilePat       = :G1:.
+expected value           = Prelude.undefined
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G2:.
+showPat.compilePat       = :G2:.
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :TG:.
+showPat.compilePat       = :TG:.
+expected value           = Prelude.undefined
+actual value             = 7
+---------------------------------------------------
+patstr                   = :Int:.
+showPat.compilePat       = :Int:.
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G1:.(!!)
+showPat.compilePat       = (:G1:.(!!))
+expected value           = 7
+actual value             = 7
+---------------------------------------------------
+patstr                   = :G1:*(!!)
+showPat.compilePat       = (:G1:*(!!))
+expected value           = 7
+actual value             = 7
+--------------------------------------------------
+===================================================
+exp = J2 (1, J4 (J3, K3 __ (J1 4.5))) False
+get = (J2 (_, J4 (_, K3 _ (J1 f))) _) = show f
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = ((!((!(!(!)))))!)
+showPat.compilePat       = ((!((!(!(!)))))!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ((!((.(!(!))))).)
+showPat.compilePat       = ((!((.(!(!))))).)
+expected value           = 4.5
+actual value             = 4.5
+--------------------------------------------------
+===================================================
+exp = J2 (1, J4 (__, K2)) False
+get ~_ = show 1  -- seems to suffice?!?...
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = ((!((!!)))!)
+showPat.compilePat       = ((!((!!)))!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ((!((.!)))!)
+showPat.compilePat       = ((!((.!)))!)
+expected value           = 1
+actual value             = 1
+---------------------------------------------------
+patstr                   = ((!(.(!!)))!)
+showPat.compilePat       = ((!(.(!!)))!)
+expected value           = 1
+actual value             = 1
+---------------------------------------------------
+patstr                   = ((!.((!!)))!)
+showPat.compilePat       = ((!.((!!)))!)
+expected value           = 1
+actual value             = 1
+--------------------------------------------------
+===================================================
+exp = J4 (__, K2)
+get ~_ = show 1  -- seems to suffice?!?...
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = ((!!))
+showPat.compilePat       = ((!!))
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ((.!))
+showPat.compilePat       = ((.!))
+expected value           = 1
+actual value             = 1
+---------------------------------------------------
+patstr                   = (.(!!))
+showPat.compilePat       = (.(!!))
+expected value           = 1
+actual value             = 1
+---------------------------------------------------
+patstr                   = .((!!))
+showPat.compilePat       = (.((!!)))
+expected value           = 1
+actual value             = 1
+--------------------------------------------------
+===================================================
+exp = (__, K2)
+get ~_ = show 1  -- seems to suffice?!?...
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = (!!)
+showPat.compilePat       = (!!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (.!)
+showPat.compilePat       = (.!)
+expected value           = 1
+actual value             = 1
+---------------------------------------------------
+patstr                   = .(!!)
+showPat.compilePat       = (.(!!))
+expected value           = 1
+actual value             = 1
+--------------------------------------------------
+===================================================
+exp = __ :: TJ
+get ~_ = show 1  -- seems to suffice?!?...
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = !
+showPat.compilePat       = !
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = .
+showPat.compilePat       = .
+expected value           = 1
+actual value             = Prelude.undefined
+--------------------------------------------------
+===================================================
+exp = (K5 (__::TJ))
+get ~_ = show 1  -- seems to suffice?!?...
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = !
+showPat.compilePat       = !
+expected value           = okay
+actual value             = okay
+---------------------------------------------------
+patstr                   = (.)
+showPat.compilePat       = (.)
+expected value           = okay
+actual value             = okay
+---------------------------------------------------
+patstr                   = (!)
+showPat.compilePat       = (!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = .
+showPat.compilePat       = .
+expected value           = okay
+actual value             = okay
+--------------------------------------------------
+===================================================
+exp = K3 (__::TK) J3
+get ~_ = show 1  -- seems to suffice?!?...
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = !
+showPat.compilePat       = !
+expected value           = okay
+actual value             = okay
+---------------------------------------------------
+patstr                   = (.!)
+showPat.compilePat       = (.!)
+expected value           = okay
+actual value             = okay
+---------------------------------------------------
+patstr                   = (!.)
+showPat.compilePat       = (!.)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (!!)
+showPat.compilePat       = (!!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = .
+showPat.compilePat       = .
+expected value           = okay
+actual value             = okay
+--------------------------------------------------
+===================================================
+exp = L1 5.6 (M1 __)
+get (L1 f (M1 _)) = show f
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = .
+showPat.compilePat       = .
+expected value           = 5.6
+actual value             = 5.6
+---------------------------------------------------
+patstr                   = .(!!)
+expected value           = 5.6 (but "# with subpattern" warning)
+showPat.compilePat       = (.(!!))
+actual value             = 5.6
+---------------------------------------------------
+patstr                   = (!!)
+showPat.compilePat       = (!!)
+expected value           = 5.6
+actual value             = 5.6
+---------------------------------------------------
+patstr                   = ((!)!)
+showPat.compilePat       = ((!)!)
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ((.)!)
+showPat.compilePat       = ((.)!)
+expected value           = 5.6
+actual value             = 5.6
+--------------------------------------------------
+===================================================
+exp = K3 __ (J1 4.5)
+get = (K3 _ (J1 f)) = show f
+? = get $ forcep patstr exp
+===================================================
+patstr                   = 
+showPat.compilePat       = compilePat: syntax error
+---------------------------------------------------
+patstr                   = (!(!))
+showPat.compilePat       = (!(!))
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = (..)
+showPat.compilePat       = (..)
+expected value           = 4.5
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = (.!)
+showPat.compilePat       = (.!)
+expected value           = 4.5
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = (.(.))
+showPat.compilePat       = (.(.))
+expected value           = 4.5
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = (.(!))
+showPat.compilePat       = (.(!))
+expected value           = 4.5
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = (!.(!))
+showPat.compilePat       = (!.(!))
+expected value           = Prelude.undefined
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = (!.(.))
+showPat.compilePat       = (!.(.))
+expected value           = Prelude.undefined
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = (..(.))
+showPat.compilePat       = (..(.))
+expected value           = 4.5
+actual value             = 4.5
+---------------------------------------------------
+patstr                   = .(..(.))
+showPat.compilePat       = (.(..(.)))
+expected value           = 4.5
+actual value             = 4.5
+--------------------------------------------------
+===================================================
+exp = (3.4, [5,__,7], __) :: (Float, [Int], Bool)
+get (_,xs,_) = show $ (xs!!2)
+? = get $ ( forcep patstr2 . forcep patstr1 ) exp
+? = get $! ( forcep_ ( unionPats [ pat1, pat2 ] ) ) exp
+(Results were more interesting with a previous semantics...).
+===================================================
+patstr1                     = !
+patstr2                     = !
+patstrU                     = !
+showPat.compilePat patstr1  = !
+showPat.compilePat patstr2  = !
+showPat.compilePat patstrU  = !
+expected value              = 7
+actual value                = 7
+actual value                = 7
+---------------------------------------------------
+patstr1                     = !
+patstr2                     = *
+patstrU                     = *
+showPat.compilePat patstr1  = !
+showPat.compilePat patstr2  = *
+showPat.compilePat patstrU  = *
+expected value              = Prelude.undefined
+actual value                = Prelude.undefined
+---------------------------------------------------
+patstr1                     = *
+patstr2                     = !
+patstrU                     = *
+showPat.compilePat patstr1  = *
+showPat.compilePat patstr2  = !
+showPat.compilePat patstrU  = *
+expected value              = Prelude.undefined
+actual value                = Prelude.undefined
+---------------------------------------------------
+patstr1                     = *
+patstr2                     = *
+patstrU                     = *
+showPat.compilePat patstr1  = *
+showPat.compilePat patstr2  = *
+showPat.compilePat patstrU  = *
+expected value              = Prelude.undefined
+actual value                = Prelude.undefined
+---------------------------------------------------
+patstr1                     = (!!!)
+patstr2                     = (*!!)
+patstrU                     = (*!!)
+showPat.compilePat patstr1  = (!!!)
+showPat.compilePat patstr2  = (*!!)
+showPat.compilePat patstrU  = (*!!)
+expected value              = Prelude.undefined
+actual value                = Prelude.undefined
+---------------------------------------------------
+patstr1                     = (*!!)
+patstr2                     = (!!*)
+patstrU                     = (*!*)
+showPat.compilePat patstr1  = (*!!)
+showPat.compilePat patstr2  = (!!*)
+showPat.compilePat patstrU  = (*!*)
+expected value              = Prelude.undefined
+actual value                = Prelude.undefined
+---------------------------------------------------
+patstr1                     = (!*.)
+patstr2                     = (!.!)
+patstrU                     = (!*!)
+showPat.compilePat patstr1  = (!*.)
+showPat.compilePat patstr2  = (!.!)
+showPat.compilePat patstrU  = (!*!)
+expected value              = Prelude.undefined
+actual value                = Prelude.undefined
+--------------------------------------------------
+===================================================
+Testing splicePats.
+---------------------------------------------------
+target       !
+path         []
+isibs        [(0,"*")]
+result       splicePats: path ends in non-recursive node type WS
+---------------------------------------------------
+target       ()
+path         []
+isibs        [(0,"*")]
+result       (*)
+---------------------------------------------------
+target       !
+path         [0]
+isibs        [(0,"*")]
+result       splicePats: path escapes target (depth)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(0,"*")]
+result       (*!!)
+---------------------------------------------------
+target       (!!)
+path         [0]
+isibs        [(0,"*")]
+result       splicePats: path ends in non-recursive node type WS
+---------------------------------------------------
+target       (!!)
+path         [2]
+isibs        [(0,"*")]
+result       splicePats: path escapes target (breadth)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(0,"*"),(0,".")]
+result       (*.!!)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(0,"*"),(1,".")]
+result       (*!.!)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(1,"."),(0,"*")]
+result       (*!.!)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(0,"*"),(2,".")]
+result       (*!!.)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(2,"*"),(2,"."),(2,".")]
+result       (!!*..)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(-1,"*")]
+result       (!!*)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(0,"*")]
+result       (*!!)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(1,"*")]
+result       (!*!)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(2,"*")]
+result       (!!*)
+---------------------------------------------------
+target       (!!)
+path         []
+isibs        [(3,"*")]
+result       splicePats: insertion indices (0-based) must be
+no greater than the number of children
+---------------------------------------------------
+target       (!(!!)!)
+path         [1]
+isibs        [(0,"*")]
+result       (!(*!!)!)
+---------------------------------------------------
+target       (!(!!)!)
+path         [1]
+isibs        [(0,"*3"),(1,"."),(2,"*")]
+result       (!(*3!.!*)!)
+---------------------------------------------------
+target       (!(!!)!)
+path         [1,0]
+isibs        [(0,"*"),(0,".")]
+result       splicePats: path ends in non-recursive node type WS
+---------------------------------------------------
+target       ((!!!)(()!)!)
+path         [1]
+isibs        [(0,"*"),(0,".")]
+result       ((!!!)(*.()!)!)
+---------------------------------------------------
+target       ((!!!)(()!)!)
+path         [1,0]
+isibs        [(0,"*"),(0,".")]
+result       ((!!!)((*.)!)!)
+---------------------------------------------------
+target       ((...)(().).)
+path         [1,0]
+isibs        [(0,"*"),(0,".")]
+result       ((...)((*.).).)
+---------------------------------------------------
+target       (:(,,):(...)(().).)
+path         [1,0]
+isibs        [(0,"*"),(0,".")]
+result       (:(,,):(...)((*.).).)
+===================================================
+Testing elidePats.
+---------------------------------------------------
+target       ((!!)!(!))
+path         []
+isibs        [0]
+result       (!(!))
+---------------------------------------------------
+target       ((!!)!(!))
+path         [0]
+isibs        [0]
+result       ((!)!(!))
+---------------------------------------------------
+target       ((!!)!(!))
+path         [1]
+isibs        [0]
+result       elidePats: elision indices (0-based) must be
+less than the number of children
+---------------------------------------------------
+target       ((!!)!(!))
+path         [1]
+isibs        [1]
+result       elidePats: elision indices (0-based) must be
+less than the number of children
+===================================================
+Testing erodePat.
+---------------------------------------------------
+target       ((!!)!(!))
+stdgen       1838733243 2147483398
+path         []
+result       ((.!)!(!))
+---------------------------------------------------
+target       ((!!)!(!))
+stdgen       739886477 367188984
+path         []
+result       ((!.)!(!))
+---------------------------------------------------
+target       ((!!)!(!))
+stdgen       1294374074 223185073
+path         []
+result       ((!.)!(!))
+---------------------------------------------------
+target       ((!!)!(!))
+stdgen       1998638512 1632766708
+path         []
+result       ((.!)!(!))
+---------------------------------------------------
+target       ((!!)!(!))
+stdgen       2068100998 709377745
+path         []
+result       ((.!)!(!))
+---------------------------------------------------
+===================================================
+Testing miscellaneous PatUtil functions...
+---------------------------------------------------
+unionPats test already done test13-1!
+---------------------------------------------------
+Testing      intersectPats [patA, patB]
+patA         (!!!)
+patB         (!.)
+result       intersectPat: WRWR: encountered arity disparity!
+---------------------------------------------------
+Testing      subPat patA patB
+patA         !
+patB         !
+as expected  True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         .
+patB         .
+as expected  True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         *
+patB         *
+as expected  True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         !
+patB         ()
+expect       True
+result       False
+---------------------------------------------------
+Testing      subPat patA patB
+patA         ()
+patB         !
+expect       False
+result       True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         ()
+patB         (!)
+intersectPat: WRWR: encountered arity disparity!
+---------------------------------------------------
+Testing      subPat patA patB
+patA         (!)
+patB         (!)
+as expected  True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         (!)
+patB         (!!)
+intersectPat: WRWR: encountered arity disparity!
+---------------------------------------------------
+Testing      subPat patA patB
+patA         (!)
+patB         ((!))
+expect       True
+result       False
+---------------------------------------------------
+Testing      subPat patA patB
+patA         (!!)
+patB         (!.)
+as expected  False
+---------------------------------------------------
+Testing      subPat patA patB
+patA         (!.)
+patB         (!!)
+as expected  True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         (!!)
+patB         (!!!)
+intersectPat: WRWR: encountered arity disparity!
+---------------------------------------------------
+Testing      subPat patA patB
+patA         ()
+patB         (!!!)
+intersectPat: WRWR: encountered arity disparity!
+---------------------------------------------------
+Testing      subPat patA patB
+patA         !
+patB         (*!.)
+expect       True
+result       False
+---------------------------------------------------
+Testing      subPat patA patB
+patA         .
+patB         (*!.)
+as expected  True
+---------------------------------------------------
+Testing      subPat patA patB
+patA         *
+patB         (*!.)
+as expected  False
+---------------------------------------------------
+Testing      subPat patA patB
+patA         *
+patB         (*)
+as expected  False
+---------------------------------------------------
+Testing      subPat patA patB
+patA         *
+patB         (**)
+as expected  False
+doit13: unexpected code 4
+---------------------------------------------------
+Testing      emptyPat
+result       .
+---------------------------------------------------
+Testing      mkPat ([1,2,3],(False,"foo"))
+result       ((()(()(()())))(()(()(()(()())))))
+---------------------------------------------------
+Testing      growPat patA ([1,2,3],(False,"foo"))
+patA         ((!(!!))(!(!!)))
+result       ((()(()(..)))(()(()(..))))
+---------------------------------------------------
+Testing      growPat patA ([1,2,3],(False,"foo"))
+patA         ((!(!(!!)))(!(!(!!))))
+result       ((()(()(()())))(()(()(()(..)))))
+---------------------------------------------------
+Testing      growPat patA ([1,2,3],(False,"foo"))
+patA         ((!(!(!!)))(!(!(!(!!)))))
+result       ((()(()(()())))(()(()(()(()())))))
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         ((!(!(!!)))(!(!(!(!!)))))
+result       ((.(.(..)))(.(.(.(..)))))
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         ((!(!(!!)))(!(!(!!))))
+result       ((.(.(..)))(.(.(..))))
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         ((!(!!))(!(!!)))
+result       ((.(..))(.(..)))
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         ((.(!!))(.(*3!)))
+result       ((.(..))(.(*2.)))
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         ((.!)(.!))
+result       ((..)(..))
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         (!!)
+result       (..)
+---------------------------------------------------
+Testing      shrinkPat patA
+patA         !
+result       .
+---------------------------------------------------
+Testing      liftPats patstrlst
+patstrs      ["(!!!)","(!.)"]
+result       ((!!!)(!.))
+---------------------------------------------------
+splicePats test already done test13-10!
+---------------------------------------------------
+isPath test already done test13-11!
+---------------------------------------------------
+Testing      mkPatN 2 ([1,2,3],(False,"foo"))
+result       ((()(..))(()(..)))
+---------------------------------------------------
+
+Testing fusion
+-fenable-rewrite-rules -O -ddump-rules -ddump-simpl-stats -ddump-rule-firings
+
+7
+7
+7
+7
+
+expN_1 = [__] :: [Int]
+expN_2 = [0,1,__,3] :: [Int]
+expN_3 = (3.4, [5,__,7], True) :: (Float, [Int], Bool)
+expN_4 = (3.4, [5,__,7], __) :: (Float, [Int], Bool)
+
+getN_1 xs = show $ ()
+getN_2 xs = show $ (xs!!3)
+getN_3 (_,xs,_) = show $ (xs!!2)
+forcen 0 expN_1 `seq` ()  =  ()
+forcen 1 expN_1 `seq` ()  =  ()
+forcen 2 expN_1 `seq` ()  =  Prelude.undefined
+forcen 3 expN_1 `seq` ()  =  Prelude.undefined
+forcen 4 expN_1 `seq` ()  =  Prelude.undefined
+
+getN_2 $ forcen 0 expN_2  =  3
+getN_2 $ forcen 1 expN_2  =  3
+getN_2 $ forcen 2 expN_2  =  3
+getN_2 $ forcen 3 expN_2  =  3
+getN_2 $ forcen 4 expN_2  =  Prelude.undefined
+
+getN_3 $ forcen 0 expN_3  =  7
+getN_3 $ forcen 1 expN_3  =  7
+getN_3 $ forcen 2 expN_3  =  7
+getN_3 $ forcen 3 expN_3  =  7
+getN_3 $ forcen 4 expN_3  =  Prelude.undefined
+
+getN_3 $ forcen 0 expN_4  =  7
+getN_3 $ forcen 1 expN_4  =  7
+getN_3 $ forcen 2 expN_4  =  Prelude.undefined
+getN_3 $ forcen 3 expN_4  =  Prelude.undefined
+getN_3 $ forcen 4 expN_4  =  Prelude.undefined
+
+===================================================
+Testing generic GNFDataN (refer to Foo.hs for the defs).
+
+---------------------------------------------------
+( getB_1 $ forcen 0  expTB_1 )  True
+( getB_1 $ forcen 1  expTB_1 )  True
+( getB_1 $ forcen 2  expTB_1 )  True
+( getB_1 $ forcen 3  expTB_1 )  True
+( getB_1 $ forcen 4  expTB_1 )  True
+( getB_1 $ forcen 5  expTB_1 )  True
+( getB_1 $ forcen 6  expTB_1 )  True
+( getB_1 $ forcen 7  expTB_1 )  True
+( getB_1 $ forcen 8  expTB_1 )  True
+( getB_1 $ forcen 9  expTB_1 )  True
+( getB_1 $ forcen 10 expTB_1 )  True
+( getB_1 $ forcen 0  expTB_2 )  True
+( getB_1 $ forcen 1  expTB_2 )  True
+( getB_1 $ forcen 2  expTB_2 )  True
+( getB_1 $ forcen 3  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_2 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 1  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 2  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_3 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 1  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 2  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_4 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_5 )  True
+( getB_1 $ forcen 1  expTB_5 )  True
+( getB_1 $ forcen 2  expTB_5 )  True
+( getB_1 $ forcen 3  expTB_5 )  True
+( getB_1 $ forcen 4  expTB_5 )  True
+( getB_1 $ forcen 5  expTB_5 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_5 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_5 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_5 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_5 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_5 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_6 )  True
+( getB_1 $ forcen 1  expTB_6 )  True
+( getB_1 $ forcen 2  expTB_6 )  True
+( getB_1 $ forcen 3  expTB_6 )  True
+( getB_1 $ forcen 4  expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_6 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 1  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 2  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_7 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_8 )  True
+( getB_1 $ forcen 1  expTB_8 )  True
+( getB_1 $ forcen 2  expTB_8 )  True
+( getB_1 $ forcen 3  expTB_8 )  True
+( getB_1 $ forcen 4  expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_8 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_9 )  True
+( getB_1 $ forcen 1  expTB_9 )  True
+( getB_1 $ forcen 2  expTB_9 )  True
+( getB_1 $ forcen 3  expTB_9 )  True
+( getB_1 $ forcen 4  expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_9 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_10 )  True
+( getB_1 $ forcen 1  expTB_10 )  True
+( getB_1 $ forcen 2  expTB_10 )  True
+( getB_1 $ forcen 3  expTB_10 )  True
+( getB_1 $ forcen 4  expTB_10 )  True
+( getB_1 $ forcen 5  expTB_10 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_10 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_10 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_10 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_10 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_10 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_11 )  True
+( getB_1 $ forcen 1  expTB_11 )  True
+( getB_1 $ forcen 2  expTB_11 )  True
+( getB_1 $ forcen 3  expTB_11 )  True
+( getB_1 $ forcen 4  expTB_11 )  True
+( getB_1 $ forcen 5  expTB_11 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_11 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_11 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_11 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_11 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_11 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_12 )  True
+( getB_1 $ forcen 1  expTB_12 )  True
+( getB_1 $ forcen 2  expTB_12 )  True
+( getB_1 $ forcen 3  expTB_12 )  True
+( getB_1 $ forcen 4  expTB_12 )  True
+( getB_1 $ forcen 5  expTB_12 )  True
+( getB_1 $ forcen 6  expTB_12 )  True
+( getB_1 $ forcen 7  expTB_12 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_12 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_12 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_12 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_13 )  True
+( getB_1 $ forcen 1  expTB_13 )  True
+( getB_1 $ forcen 2  expTB_13 )  True
+( getB_1 $ forcen 3  expTB_13 )  True
+( getB_1 $ forcen 4  expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_13 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_14 )  True
+( getB_1 $ forcen 1  expTB_14 )  True
+( getB_1 $ forcen 2  expTB_14 )  True
+( getB_1 $ forcen 3  expTB_14 )  True
+( getB_1 $ forcen 4  expTB_14 )  True
+( getB_1 $ forcen 5  expTB_14 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_14 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_14 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_14 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_14 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_14 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_15 )  True
+( getB_1 $ forcen 1  expTB_15 )  True
+( getB_1 $ forcen 2  expTB_15 )  True
+( getB_1 $ forcen 3  expTB_15 )  True
+( getB_1 $ forcen 4  expTB_15 )  True
+( getB_1 $ forcen 5  expTB_15 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_15 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_15 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_15 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_15 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_15 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_16 )  5
+( getB_1 $ forcen 1  expTB_16 )  5
+( getB_1 $ forcen 2  expTB_16 )  5
+( getB_1 $ forcen 3  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_16 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_17 )  5
+( getB_1 $ forcen 1  expTB_17 )  5
+( getB_1 $ forcen 2  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_17 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_18 )  5
+( getB_1 $ forcen 1  expTB_18 )  5
+( getB_1 $ forcen 2  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_18 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_19 )  False
+( getB_1 $ forcen 1  expTB_19 )  False
+( getB_1 $ forcen 2  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_19 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_20 )  beesix
+( getB_1 $ forcen 1  expTB_20 )  beesix
+( getB_1 $ forcen 2  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_20 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_21 )  &lt;bah&gt;
+( getB_1 $ forcen 1  expTB_21 )  &lt;bah&gt;
+( getB_1 $ forcen 2  expTB_21 )  &lt;bah&gt;
+( getB_1 $ forcen 3  expTB_21 )  &lt;bah&gt;
+( getB_1 $ forcen 4  expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_21 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_22 )  &lt;bah&gt;
+( getB_1 $ forcen 1  expTB_22 )  &lt;bah&gt;
+( getB_1 $ forcen 2  expTB_22 )  &lt;bah&gt;
+( getB_1 $ forcen 3  expTB_22 )  &lt;bah&gt;
+( getB_1 $ forcen 4  expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_22 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_23 )  &lt;bah&gt;
+( getB_1 $ forcen 1  expTB_23 )  &lt;bah&gt;
+( getB_1 $ forcen 2  expTB_23 )  &lt;bah&gt;
+( getB_1 $ forcen 3  expTB_23 )  &lt;bah&gt;
+( getB_1 $ forcen 4  expTB_23 )  &lt;bah&gt;
+( getB_1 $ forcen 5  expTB_23 )  &lt;bah&gt;
+( getB_1 $ forcen 6  expTB_23 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_23 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_23 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_23 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_23 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_24 )  &lt;bah&gt;
+( getB_1 $ forcen 1  expTB_24 )  &lt;bah&gt;
+( getB_1 $ forcen 2  expTB_24 )  &lt;bah&gt;
+( getB_1 $ forcen 3  expTB_24 )  &lt;bah&gt;
+( getB_1 $ forcen 4  expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_24 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_25 )  &lt;bah&gt;
+( getB_1 $ forcen 1  expTB_25 )  &lt;bah&gt;
+( getB_1 $ forcen 2  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 3  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 4  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 5  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 6  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 7  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_25 )  Prelude.undefined
+( getB_1 $ forcen 0  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 1  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 2  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 3  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 4  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 5  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 6  expTB_26 )  &lt;bah&gt;
+( getB_1 $ forcen 7  expTB_26 )  Prelude.undefined
+( getB_1 $ forcen 8  expTB_26 )  Prelude.undefined
+( getB_1 $ forcen 9  expTB_26 )  Prelude.undefined
+( getB_1 $ forcen 10 expTB_26 )  Prelude.undefined
+
+
+Testing SOP rnfpDyn with SYB generic stop condition.
+
+Float
+WR
+BBB 3.4
+[Int]
+WI
+AAA 
+Bool
+WI
+AAA 
+7
+
+Testing SOP/SYB rnfpDyn again.
+
+[[Int]]
+Noo-C
+WI
+Noo-C
+AAA 
+[[[Int]]]
+Noo-D
+WI
+Noo-D
+AAA 
+6
+
+Testing SOP rnfpDyn' with SOP generic stop condition.
+
+*** :
+WR
+Testing SOP rnfpDyn'' with Typeable generic stop condition
+
+[[Int]]
+WI
+AAA 
+[[[Int]]]
+WI
+AAA 
+7
+
+Testing Seqable class (tuple with list):
+
+===================================================
+exp = &lt;refer to test code&gt;
+get (_,xs,_) = show $ (xs!!2)
+? = get $! exp
+===================================================
+1 expected value           = 7
+1 actual value             = 7
+---------------------------------------------------
+2 expected value           = Prelude.undefined
+2 actual value             = Prelude.undefined
+---------------------------------------------------
+3 expected value           = Prelude.undefined
+3 actual value             = Prelude.undefined
+---------------------------------------------------
+4 expected value           = 7
+4 actual value             = 7
+---------------------------------------------------
+5 expected value           = 7
+5 actual value             = 7
+---------------------------------------------------
+6 expected value           = Prelude.undefined
+6 actual value             = Prelude.undefined
+---------------------------------------------------
+7 expected value           = 7
+7 actual value             = 7
+---------------------------------------------------
+8 expected value           = 7
+8 actual value             = 7
+---------------------------------------------------
+9 expected value           = 7
+9 actual value             = 7
+--------------------------------------------------
+
+Testing Seqable class (nested tuples):
+
+===================================================
+exp = &lt;refer to test code&gt;
+get (_,(_,x),_) = show x
+? = get $! exp
+===================================================
+1 expected value           = 7
+1 actual value             = 7
+---------------------------------------------------
+2 expected value           = 7
+2 actual value             = 7
+---------------------------------------------------
+3 expected value           = Prelude.undefined
+3 actual value             = Prelude.undefined
+---------------------------------------------------
+4 expected value           = Prelude.undefined
+4 actual value             = Prelude.undefined
+---------------------------------------------------
+5 expected value           = Prelude.undefined
+5 actual value             = Prelude.undefined
+---------------------------------------------------
+6 expected value           = 7
+6 actual value             = 7
+---------------------------------------------------
+7 expected value           = Prelude.undefined
+7 actual value             = Prelude.undefined
+---------------------------------------------------
+8 expected value           = 7
+8 actual value             = 7
+---------------------------------------------------
+9 expected value           = Prelude.undefined
+9 actual value             = Prelude.undefined
+--------------------------------------------------
+
+Testing generic Seqable (tuple with list):
+
+===================================================
+exp = &lt;refer to test code&gt;
+get (_,xs,_) = show $ (xs!!2)
+? = get $! exp
+===================================================
+1 expected value           = 7
+1 actual value             = 7
+---------------------------------------------------
+2 expected value           = Prelude.undefined
+2 actual value             = Prelude.undefined
+---------------------------------------------------
+3 expected value           = Prelude.undefined
+3 actual value             = Prelude.undefined
+---------------------------------------------------
+4 expected value           = 7
+4 actual value             = 7
+---------------------------------------------------
+5 expected value           = 7
+5 actual value             = 7
+---------------------------------------------------
+6 expected value           = Prelude.undefined
+6 actual value             = Prelude.undefined
+---------------------------------------------------
+7 expected value           = 7
+7 actual value             = 7
+---------------------------------------------------
+8 expected value           = 7
+8 actual value             = 7
+---------------------------------------------------
+9 expected value           = 7
+9 actual value             = 7
+--------------------------------------------------
+
+Testing generic Seqable (expTJ_*):
+
+===================================================
+exp = J2 (1, J4 (__, K3 __ (J1 4.5))) __
+get = (J2 (_, J4 (_, K3 _ (J1 f))) _) = show f
+? = get exp
+===================================================
+1 expected value           = 4.5
+1 actual value             = 4.5
+---------------------------------------------------
+2 expected value           = Prelude.undefined
+2 actual value             = Prelude.undefined
+---------------------------------------------------
+3 expected value           = 4.5
+3 actual value             = 4.5
+---------------------------------------------------
+4 expected value           = Prelude.undefined
+4 actual value             = Prelude.undefined
+---------------------------------------------------
+5 expected value           = Prelude.undefined
+5 actual value             = Prelude.undefined
+---------------------------------------------------
+6 expected value           = Prelude.undefined
+6 actual value             = Prelude.undefined
+--------------------------------------------------
+
+Testing PatNodeAttrs (pattern node attributes):
+
+===================================================
+exp = G2 5 __ 7 :: TG
+get (G2 _ _ n) = n
+? = get $ forcep patstr exp
+===================================================
+patstr                   = ^^!
+showPat.compilePat       = compilePat: input not completely consumed
+Input remaining: ^^!
+Patterns so far parsed: []
+---------------------------------------------------
+patstr                   = ^=^!
+showPat.compilePat       = compilePat: input not completely consumed
+Input remaining: ^=^!
+Patterns so far parsed: []
+---------------------------------------------------
+patstr                   = =*
+showPat.compilePat       = =*
+expected value           = Prelude.undefined
+actual value             = 7
+---------------------------------------------------
+patstr                   = +*
+showPat.compilePat       = +*
+expected value           = Prelude.undefined
+NFDataP: TRACE: 0 TG
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ^*
+showPat.compilePat       = ^*
+expected value           = Prelude.undefined
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = +^!
+showPat.compilePat       = +^!
+expected value           = 7
+NFDataP: TRACE: 0 TG
+actual value             = 7
+---------------------------------------------------
+patstr                   = +^*
+showPat.compilePat       = +^*
+expected value           = Prelude.undefined
+NFDataP: TRACE: 0 TG
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = +^(.!.)
+showPat.compilePat       = +^(.!.)
+expected value           = Prelude.undefined
+NFDataP: TRACE: 0 TG
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ^+()
+showPat.compilePat       = +^()
+expected value           = 7 (due to pattern-match failure)
+actual value             = 7
+---------------------------------------------------
+patstr                   = ^+(!!)
+showPat.compilePat       = +^(!!)
+expected value           = 7 (due to pattern-match failure)
+actual value             = 7
+---------------------------------------------------
+patstr                   = ^+(!!!)
+showPat.compilePat       = +^(!!!)
+expected value           = Prelude.undefined
+NFDataP: TRACE: 0 TG
+actual value             = Prelude.undefined
+---------------------------------------------------
+patstr                   = ^+(!!!!)
+showPat.compilePat       = +^(!!!!)
+expected value           = 7 (due to pattern-match failure)
+actual value             = 7
+--------------------------------------------------
+
+Testing PatNodeAttrs (pattern node attributes):
+
+===================================================
+exp = (([0..999999],[1000000..1999999]),[2000000..3999999])
+get ((xs,ys),zs) = show ((last xs,last ys),last zs)
+? = get $ forcep patstr exp
+===================================================
+patstr                   = +( +&gt;ba(+*+*)=+*)
+showPat.compilePat       = +(&gt;ba+(+*+*)=+*)
+expected value           = ((999999,1999999),3999999)
+NFDataP: TRACE: 0 (([Int],[Int]),[Int])
+NFDataP: TRACE: 1 ([Int],[Int])
+NFDataP: TRACE: 3 [Int]
+NFDataP: TRACE: 2 [Int]
+NFDataP: TRACE: 4 [Int]
+actual value             = ((999999,1999999),3999999)
+---------------------------------------------------
+patstr                   = +(=+&gt;ba(+*+*) +*)
+showPat.compilePat       = +(=&gt;ba+(+*+*)+*)
+expected value           = ((999999,1999999),3999999)
+NFDataP: TRACE: 0 (([Int],[Int]),[Int])
+NFDataP: TRACE: 1 ([Int],[Int])
+NFDataP: TRACE: 4 [Int]
+actual value             = ((999999,1999999),3999999)
+--------------------------------------------------
+
+
+FAILING ON PURPOSE TO DISPLAY THE LOGGED OUTPUT!
+
+                                          ### Failure in: All:0
+expected: 0
+ but got: 1
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+*** Exception: ExitFailure 1
+<span style="color: #00F; font-weight: bold;">&gt;&gt;</span> ^D
+Leaving GHCi.
+</pre>
+</body>
+</html>

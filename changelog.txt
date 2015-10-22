@@ -1,0 +1,150 @@
+
+** 0.7.0.2 -> 0.8.0.0
+ - this is API-breaking because the semantics of forcep have changed
+    - (see [Note] below these, earlier explanations)
+ - IsString instance (-XOverloadedStrings)
+ - how could I not have thought of this before?
+     > ghci
+     >> import Control.DeepSeq.Bounded
+     >> let x = ( 'a' , ( undefined::Bool , 0xC ) ) :: (Char,(Bool,Int))
+ - before:
+     >> rnfp (compilePat ".(..)") x
+     ()
+     >> rnfp (compilePat ".(!.)") x
+     *** Exception: Prelude.undefined
+ - now (but the above still works of coure):
+     >> rnfp ".(..)" x
+     ()
+     >> rnfp ".(!.)" x
+     *** Exception: Prelude.undefined
+ - required no code change, just addition of this instance:
+     instance IsString Pattern where fromString = compilePat
+ - hahaha!!
+ - I guess this is something you'd definitely want to do with
+   any DSL having a concrete syntax
+---------
+ [Note]
+ - (not as a necessary consequence of OverloadedStrings, but
+   as an obvious type change which they make practical)
+ - the new semantics are neither a superset nor a subset of the previous
+ - also, forcep_ is a little stronger
+    - domain of definition is a superset of the previous
+ - and in fact forcep and forcep_ are now synonymous (i.e. forcep_ = forcep)
+ - the underscore version is deprecated for removal in 0.9
+ - this applies to deepseqp/deepseqp_ likewise
+ - the specific change to semantics is:
+    - forcep used to accept only String first argument (literal or variable)
+    - but now it accepts Pattern first argument, or String literal
+    - and forcep_ used to accept only Pattern first arg.
+    - but now accepts that, or String literal
+ - the only function in the new API still accepting a String variable
+   argument (representing a pattern) is compilePat (hopefully)
+    - that has a tidiness about it
+
+0.7.0.1 -> 0.7.0.2
+ - still trying to decide on policy regarding cpphs
+ - this is all motivated by one pesky rogue anonymous build spammer
+ - had a spot of trouble over this, but learned a few tricks
+ - hopefully this upload is the ticket; sorry for the extra version uploads
+
+0.7.0.0 -> 0.7.0.1
+ - documentation touch-ups, mostly
+ - truncatePat did actually have an API-breaking change here (sorry!
+   at least it had been announced as coming in 0.7 in the comment
+   since 0.6.0.0...).
+
+** 0.6.2.0 -> 0.7.0.0
+ - although slated for early March, I'm just going ahead
+   and releasing 0.7 now, which finalises the grammar, and
+   largely closes the book on the first volume of this enterprise
+ - plans from here to version 1.0:
+    - definitely get rid of the T* nodes, and just rely on the attribute
+    - still undecided to refactor PatNode as product instead of sum...
+       - if do refactor, it'll be easier with T* nodes absorbed
+    - if I can get better test suites in there, that would be swell
+    - if things pass thorough testing, that will bring me to 0.8
+       - in case a major bump itch was pending for any reason,
+         NOW's the time to pull the bumper, rather than later!
+    - between 0.8 and 1.0, there needs to be work on Seqable
+       - though maybe there's not much to do, since it's (A) so minimalist,
+         and (B) designed for use by auto-instrumentation tools
+    - so basically, if everything in deepseq-bounded has polish
+      and is well-tested, there's nothing holding back 1.0 I think...
+       - just go 0.9 then give it a grace period, like let's say
+         two months (seeing 0.9.1 0.9.2 ...), and after that,
+         when things feel right, upload whatever I've got as 1.0
+
+0.6.1.0 -> 0.6.2.0
+ - everything relating to attoparsec has been ripped out
+    - quite a bit lighter on the dependencies as a result
+
+0.6.0.3 -> 0.6.1.0
+ - now have an H98 parser for the new grammar, and it's quite
+   a bit shorter than the attoparsec
+    - I will yank out the attoparsec parser completely in 0.6.2!
+ - non-manual USE_CPPHS flag added (also in seqaid and in leaky)
+   so that client build system can decide whether cpp is locally available
+   or whether they need to install cpphs (and, if they've configured their
+   path correctly, to use it)
+ - flanking whitespace within type constraints lists is now
+   accepted (ignored)
+    - whitespace is not preserved beyond the parser; the need would
+      have to be demonstrated to support that
+ - yet further decrufting of Compile_new_grammar.hs
+
+0.6.0.2 -> 0.6.0.3
+ - realised I should be using Manual: True in all my .cabal flags,
+   or else the constraint solver is free to toggle them!!
+
+0.6.0.1 -> 0.6.0.2
+ - VACANT_HASH flag removed (permanent value = False)
+ - further decrufting of Compile_new_grammar.hs
+ - HASKELL98_FRAGMENT tested a bit more (compiles at least,
+   and the tests run, but there's still no H98 parser...)
+ - manual NFData instance of Pattern (instead of generic deriving)
+   so can use it to force non-interleaving of output with warnings,
+   even in H98 (and has other uses when debugging)
+ - a bit of sanitising of .cabal flag descriptions, and of NFDataP.handleAttrs
+ - a few incidental bug fixes; and a few recognised but not yet fixed...
+
+0.6.0.0 -> 0.6.0.1
+ - bugfixes so can build with NEW_IMPROVED_PATTERN_GRAMMAR set False
+ - got rid of three transient flags, which are now "permanently defaulted"
+   to the values shown:
+     NEW_SEMICOLON_TYPE_LIST = True
+     NEW_CONCRETE_WI_AND_WS = True
+     TYPE_CONSTRAINTED_NODES_USE_UNESCAPED_SPACE_AS_TYPE_LIST_SEPARATOR = False
+   (To read about these, consult the 0.6.0.0 hackage page which documents
+   these flags; all of them are departures from the new grammar as published.)
+ - decrufting of Compile_new_grammar.hs
+
+** 0.5.5 -> 0.6.0.0
+ - the transition-5-6-7.html file contains additional details.
+    - it is in the ./HTML directory of the source distribution, or online at
+      http://www.fremissant.net/deepseq-bounded/transition-5-6-7.html
+ - many misc. bug fixes
+ - much polishing of documentation (corrections, elaborations, refinements)
+ - renamed module "...Bounded.Generics" to "...Bounded.Generic"
+ - changed the pattern concrete syntax slightly (now more compact)
+    - refer to http://fremissant.net/deepseq-bounded/grammar.html
+    - more than "slightly", in the end!
+ - added nice data family FF :)
+ - changed PatNode so all constructors take a single parameter of
+   (new) type PatNodeAttrs
+ - several new capabilities (refer to the API docs for PatNodeAttrs)
+ - simplified the PatNode type itself
+ - using attoparsec to build the pattern DSL parser
+ - PatAlg.hs -> PatUtil.hs
+ - isSubPatOf -> subPat
+    - I hesitated to shed the "is", but the Bool result value
+      pretty much clears up any possible ambiguity there
+    - the ambiguity (which still remains) is, which is the
+      subpattern, which the host pattern, as the types don't
+      help you there!
+       - but we're pretty safe, corresponds to infix use as
+         if it were the mathematical inclusion symbol
+ - type constraints are now handled as a prefix modifier like
+   any other (except that internally they still have their
+   own PatNode's TI, TR etc.)
+ - more...
+

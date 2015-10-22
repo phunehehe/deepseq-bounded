@@ -469,7 +469,6 @@
 #endif
 
 #if NFDATA_INSTANCE_PATTERN
-  instance NFData ThreadId where rnf x = ()
 -- (Hand write this NFData instance for greater portability.)
 --instance NFData PatNodeAttrs where rnf = DSG.genericRnf
   instance NFData PatNodeAttrs where

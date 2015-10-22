@@ -33,6 +33,7 @@
   -- XXX For debugging only!
   {-# LANGUAGE BangPatterns #-}
 
+  {-# LANGUAGE FlexibleContexts #-}
   {-# LANGUAGE Rank2Types #-}
   {-  LANGUAGE ScopedTypeVariables #-}
 
